@@ -142,6 +142,9 @@ public enum ODataTypes {
 		this.text = text;
 	}
 
+	/**
+	 * @return the jdbc value as oData value
+	 */
 	public String getText() {
 		return text;
 	}
@@ -157,9 +160,9 @@ public enum ODataTypes {
 	/**
 	 * Convert an oData parameter like 'key1' to the corresponding JDBC object so stmt.setObject() can be called with it.
 	 * 
-	 * @param odataparameter
-	 * @param columnmetadata 
-	 * @return
+	 * @param odataparameter the value in the oData world
+	 * @param columnmetadata table metadata to read the data types and the such
+	 * @return the same value in the JDBC world
 	 */
 	public static Object convertToJDBC(String odataparameter, EntityTypeProperty columnmetadata) {
 		return odataparameter;

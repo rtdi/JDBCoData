@@ -76,10 +76,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.3.2</version>
 				<configuration>
 					<source>11</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
+					<excludePackageNames>io.rtdi.appcontainer.odata.entity.*</excludePackageNames>
 				</configuration>
 				<executions>
 					<execution>
