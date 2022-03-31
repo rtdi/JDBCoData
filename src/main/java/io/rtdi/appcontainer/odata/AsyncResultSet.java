@@ -78,6 +78,8 @@ public class AsyncResultSet {
 	 * Provides the data in the ODataResultSet format for the requested segment
 	 * This supports server side and client side paging.
 	 * 
+	 * @param skip Number of records to skip from the beginning
+	 * @param top Max number of rows to return
 	 * @param page the page number to return the data for, starting with 0
 	 * @return the resultset object with up to limit-many rows
 	 * @throws SQLException thrown when there are JDBC errors
