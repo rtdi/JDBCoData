@@ -80,7 +80,7 @@
 				<configuration>
 					<source>11</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
-                    <sourceFileExcludes>package-info.java</sourceFileExcludes>
+					<excludePackageNames>io.rtdi.appcontainer.odata.entity.*</excludePackageNames>
 				</configuration>
 				<executions>
 					<execution>
