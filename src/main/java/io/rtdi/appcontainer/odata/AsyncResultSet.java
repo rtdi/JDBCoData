@@ -50,9 +50,8 @@ public class AsyncResultSet {
 	 * @param select The raw oData $select string
 	 * @param filter The raw oData $filter string
 	 * @param order The raw oData $order string
-	 * @param skip Optional number of records to skip from the beginning
-	 * @param top Optional maximum number of rows to return
 	 * @param resultsetid An indicator for this this statement
+	 * @param limit the maxpagesize limit
 	 * @param service The current service this is being called from
 	 * @throws SQLException In case the provided parameters are wrong and the database complains
 	 * @throws ODataException In case the provided parameters are logically incorrect
