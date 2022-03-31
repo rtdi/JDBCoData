@@ -46,16 +46,16 @@ public class AsyncResultSet {
 	 * had been fetched or a timeout event occurs. Also the connection must remain open for the entire time to avoid SQL errors.
 	 * 
 	 * @param connection A JDBC connection with its own lifetime
-	 * @param identifier
-	 * @param select
-	 * @param filter
-	 * @param order
-	 * @param skip
-	 * @param top
-	 * @param resultsetid
-	 * @param service
-	 * @throws SQLException
-	 * @throws ODataException
+	 * @param identifier The schema/objectname
+	 * @param select The raw oData $select string
+	 * @param filter The raw oData $filter string
+	 * @param order The raw oData $order string
+	 * @param skip Optional number of records to skip from the beginning
+	 * @param top Optional maximum number of rows to return
+	 * @param resultsetid An indicator for this this statement
+	 * @param service The current service this is being called from
+	 * @throws SQLException In case the provided parameters are wrong and the database complains
+	 * @throws ODataException In case the provided parameters are logically incorrect
 	 */
 	public AsyncResultSet(Connection connection, 
 			ODataIdentifier identifier, String select, String filter, String order,
@@ -81,7 +81,7 @@ public class AsyncResultSet {
 	 * 
 	 * @param page the page number to return the data for, starting with 0
 	 * @return the resultset object with up to limit-many rows
-	 * @throws SQLException
+	 * @throws SQLException thrown when there are JDBC errors
 	 */
 	public ODataResultSet fetchRecords(Integer skip, Integer top, Integer page) throws SQLException {
 		/*
@@ -159,6 +159,9 @@ public class AsyncResultSet {
 		return resultset;
 	}
 	
+	/**
+	 * @return true if the read was completed successfully
+	 */
 	public boolean readComplete() {
 		return readcompleted;
 	}
@@ -179,6 +182,9 @@ public class AsyncResultSet {
 		return resultsetid + String.format("%06d", page);
 	}
 	
+	/**
+	 * @return the exception the reader thread faced or null
+	 */
 	public Exception getError() {
 		if (reader != null) {
 			return reader.getError();

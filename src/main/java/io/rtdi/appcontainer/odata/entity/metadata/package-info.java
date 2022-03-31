@@ -9,4 +9,6 @@
 
 package io.rtdi.appcontainer.odata.entity.metadata;
 
-import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
