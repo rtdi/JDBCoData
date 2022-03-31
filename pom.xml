@@ -80,6 +80,9 @@
 				<configuration>
 					<source>11</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
+					<sourceFileExcludes>
+						<sourceFileExclude>*/package-info.*</sourceFileExclude>
+					</sourceFileExcludes>
 				</configuration>
 				<executions>
 					<execution>
