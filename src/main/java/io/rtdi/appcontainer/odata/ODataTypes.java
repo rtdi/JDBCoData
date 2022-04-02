@@ -1,6 +1,15 @@
 package io.rtdi.appcontainer.odata;
 
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
+import jakarta.xml.bind.DatatypeConverter;
 
 public enum ODataTypes {
 	/**
@@ -149,11 +158,38 @@ public enum ODataTypes {
 		return text;
 	}
 
+	/**
+	 * Convert the value retrieved via rs.getObject() into the correct OData object value
+	 * 
+	 * @param jdbcobject The value returned by rs.getObject()
+	 * @return A string oData expects as payload for this data type
+	 */
 	public static Object convert(Object jdbcobject) {
 		if (jdbcobject == null) {
 			return null;
 		} else {
-			return jdbcobject.toString();
+			if (jdbcobject instanceof Number) {
+				return jdbcobject.toString(); // Convert to a string as the value might be NaN or infinity
+			} else if (jdbcobject instanceof CharSequence) {
+				return jdbcobject.toString();
+			} else if (jdbcobject instanceof byte[]) {
+				return DatatypeConverter.printHexBinary((byte[]) jdbcobject);
+			} else if (jdbcobject instanceof Boolean) {
+				return jdbcobject;
+			} else if (jdbcobject instanceof Date) {
+				return jdbcobject.toString(); // returns the date in the correct format YYYY-MM-DD
+			} else if (jdbcobject instanceof Timestamp) {
+				Timestamp ts = (Timestamp) jdbcobject;
+				// 2000-01-01T16:00:00.000Z
+				ZonedDateTime d = ZonedDateTime.ofInstant(ts.toInstant(), ZoneOffset.UTC);
+				return d.toString();
+			} else if (jdbcobject instanceof Time) {
+				Time t = (Time) jdbcobject;
+				LocalTime l = t.toLocalTime();
+				return l.toString(); // returns the date in the correct iso format HH24:MI:SS.sss
+			} else {
+				return jdbcobject.toString();
+			}
 		}
 	}
 
@@ -163,8 +199,70 @@ public enum ODataTypes {
 	 * @param odataparameter the value in the oData world
 	 * @param columnmetadata table metadata to read the data types and the such
 	 * @return the same value in the JDBC world
+	 * @throws ODataException in case of a value conversion error
 	 */
-	public static Object convertToJDBC(String odataparameter, EntityTypeProperty columnmetadata) {
-		return odataparameter;
+	public static Object convertToJDBC(String odataparameter, EntityTypeProperty columnmetadata) throws ODataException {
+		try {
+			if (odataparameter == null) {
+				return null;
+			} else {
+				switch (columnmetadata.getODataType()) {
+				case BINARY:
+					return DatatypeConverter.parseHexBinary(odataparameter);
+				case BOOLEAN:
+					return odataparameter;
+				case BYTE:
+				case INT16:
+				case INT32:
+				case SBYTE:
+					return Integer.valueOf(odataparameter);
+				case DATE:
+					return Date.valueOf(odataparameter);
+				case DATETIMEOFFSET:
+					ZonedDateTime d = ZonedDateTime.parse(odataparameter);
+					return Timestamp.from(d.toInstant());
+				case DECIMAL:
+					return new BigDecimal(odataparameter);
+				case DOUBLE:
+					return Double.valueOf(odataparameter);
+				case DURATION:
+					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+				case GUID:
+					return odataparameter;
+				case Geography:
+				case GeographyCollection:
+				case GeographyLineString:
+				case GeographyMultiLineString:
+				case GeographyMultiPoint:
+				case GeographyMultiPolygon:
+				case GeographyPoint:
+				case GeographyPolygon:
+				case Geometry:
+				case GeometryCollection:
+				case GeometryLineString:
+				case GeometryMultiLineString:
+				case GeometryMultiPoint:
+				case GeometryMultiPolygon:
+				case GeometryPoint:
+				case GeometryPolygon:
+					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+				case INT64:
+					return Long.valueOf(odataparameter);
+				case SINGLE:
+					return Float.valueOf(odataparameter);
+				case STREAM:
+					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+				case STRING:
+					return odataparameter;
+				case TIMEOFDAY:
+					LocalTime l = LocalTime.parse(odataparameter);
+					return Time.valueOf(l);
+				default:
+					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+				}
+			}
+		} catch (NumberFormatException e) {
+			throw new ODataException("Cannot convert the input parameter to the required target data type of that column", e);
+		}
 	}
 }

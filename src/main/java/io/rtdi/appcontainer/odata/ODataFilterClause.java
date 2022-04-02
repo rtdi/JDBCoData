@@ -14,9 +14,12 @@ public class ODataFilterClause extends ODataSQLStatementPart {
 			throw new ODataException("The table metadata has no details about the EntityType");
 		} else if (text != null) {
 			CharBuffer in = CharBuffer.wrap(text);
-			Filter f = new Filter();
+			Filter f = new Filter(table);
 			f.parse(in);
 			sql = new StringBuilder(f.getSQL());
+			if (params == null && f.getParams() != null) {
+				params = f.getParams();
+			}
 		} else {
 			sql = null;
 		}

@@ -6,7 +6,6 @@ import java.nio.CharBuffer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 class FilterSyntaxTest {
 
@@ -18,11 +17,10 @@ class FilterSyntaxTest {
 	static void tearDownAfterClass() throws Exception {
 	}
 
-	@Test
 	void test() {
 		try {
 			CharBuffer in = CharBuffer.wrap("FirstName eq 'Scott' or FirstName eq 'Fitz'");
-			Filter f = new Filter();
+			Filter f = new Filter(null);
 			f.parse(in);
 			System.out.println(f.getExpression());
 			System.out.println(f.getSQL());

@@ -8,4 +8,8 @@ public class ODataException extends Exception {
 		super(message);
 	}
 
+	public ODataException(String message, Exception e) {
+		super(message, e);
+	}
+
 }

@@ -43,8 +43,8 @@ public class EntityType extends ODataBase {
 		key.add(new PropertyRef(columnname));
 	}
 	
-	public EntityTypeProperty addColumn(String columnname, JDBCType type, Integer length, Integer scale) {
-		EntityTypeProperty col = new EntityTypeProperty(columnname, type, length, scale);
+	public EntityTypeProperty addColumn(String columnname, JDBCType type, String typename, Integer length, Integer scale) {
+		EntityTypeProperty col = new EntityTypeProperty(columnname, type, typename, length, scale);
 		columns.add(col);
 		index.put(columnname, col);
 		col.addAnnotation(ODataUtils.JDBCDATATYPE, type.getName());
