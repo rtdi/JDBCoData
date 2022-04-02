@@ -1,5 +1,7 @@
 package io.rtdi.appcontainer.odata.entity;
 
+import java.sql.SQLException;
+
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
@@ -7,9 +9,17 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 public class ODataError {
 
 	private SingleError error;
+	private int statuscode = 501;
+	
+	public ODataError() {
+		super();
+	};
 	
 	public ODataError(Exception e) {
 		error = new SingleError(e);
+		if (e instanceof SQLException) {
+			this.statuscode = 416;
+		}
 	}
 	/*
 		{
@@ -35,5 +45,9 @@ public class ODataError {
 	@XmlElement(name = "Error")
 	public SingleError getError() {
 		return error;
+	}
+
+	public int getStatusCode() {
+		return statuscode;
 	}
 }

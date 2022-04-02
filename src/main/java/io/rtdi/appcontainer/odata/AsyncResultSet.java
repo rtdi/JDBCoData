@@ -51,14 +51,15 @@ public class AsyncResultSet {
 	 * @param filter The raw oData $filter string
 	 * @param order The raw oData $order string
 	 * @param resultsetid An indicator for this this statement
-	 * @param limit the maxpagesize limit
+	 * @param limit the maxpagesize to this many records
+	 * @param resultsetrowlimit The absolute upper bound of row the query returns
 	 * @param service The current service this is being called from
 	 * @throws SQLException In case the provided parameters are wrong and the database complains
 	 * @throws ODataException In case the provided parameters are logically incorrect
 	 */
 	public AsyncResultSet(Connection connection, 
 			ODataIdentifier identifier, String select, String filter, String order,
-			String resultsetid, int limit,
+			String resultsetid, int limit, int resultsetrowlimit,
 			JDBCoDataService service) throws SQLException, ODataException {
 		this.conn = connection;
 		this.resultsetid = resultsetid;
@@ -67,9 +68,11 @@ public class AsyncResultSet {
 		this.table = service.getMetadata(conn, identifier);
 		ODataFilterClause where = new ODataFilterClause(filter, table);
 		ODataSelectClause projection = new ODataSelectClause(select, table);
+		ODataOrderByClause orderby = new ODataOrderByClause(order, table);
 		// read all data ignoring skip/top
-		String sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, table);
+		String sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), orderby.getSQL(), null, resultsetrowlimit, table);
 		reader = new ReaderThread(sql);
+		reader.addParams(where.getParams());
 		runner = new Thread(reader, "AsyncSQLReader_" + this.hashCode());
 		runner.start();
 	}
@@ -198,15 +201,29 @@ public class AsyncResultSet {
 		
 		private String sql;
 		private Exception error;
+		private List<Object> params;
 
 		private ReaderThread(String sql) {
 			this.sql = sql;
+		}
+
+		public void addParams(List<Object> params) {
+			if (this.params == null) {
+				this.params = params;
+			} else {
+				this.params.addAll(params);
+			}
 		}
 
 		@Override
 		public void run() {
 			try {
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
+					if (params != null) {
+						for (int i = 0; i < params.size(); i++) {
+							stmt.setObject(i+1, params.get(i));
+						}
+					}
 					try (ResultSet rs = stmt.executeQuery();) {
 						columnnames = new String[rs.getMetaData().getColumnCount()];
 						for (int i=0; i<rs.getMetaData().getColumnCount(); i++) {

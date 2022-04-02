@@ -20,6 +20,8 @@ public class ODataUtils {
 	public static final String JDBCDATATYPE = "@jdbc.datatype";
 	public static final String VERSIONVALUE = "4.0";
 	public static final String NEXTLINK = "@odata.nextLink";
+	public static final String SOURCEDATATYPE = "@jdbc.datatype.source";
+	public static final String JDBCLENGTH = "@jdbc.length";
 
 	public static String encodeName(String name) {
 		return name;

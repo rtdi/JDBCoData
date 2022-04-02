@@ -1,16 +1,21 @@
 package io.rtdi.appcontainer.odata.entity.data.expression;
 
 import java.nio.CharBuffer;
+import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
+import io.rtdi.appcontainer.odata.ODataTypes;
+import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
+import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
 public class StringConstant extends Expression {
 
 	private StringBuilder text;
+	private EntityTypeProperty datatype;
 
-	public StringConstant(Stack<Expression> stack) {
-		super(stack);
+	public StringConstant(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+		super(stack, table, params);
 		text = new StringBuilder();
 	}
 
@@ -27,6 +32,7 @@ public class StringConstant extends Expression {
 				case '\\':
 					escaped = true;
 				case '\'': {
+					addParam(text.toString());
 					return;
 				}
 				default:
@@ -43,8 +49,17 @@ public class StringConstant extends Expression {
 	}
 
 	@Override
-	public CharSequence getSQL() {
-		return "\'" + text + "\' ";
+	public CharSequence getSQL() throws ODataException {
+		if (datatype == null) {
+			return "\'" + text + "\' ";
+		} else {
+			addParam(ODataTypes.convertToJDBC(text.toString(), datatype));
+			return "? ";
+		}
+	}
+
+	public void setDataType(EntityTypeProperty datatype) {
+		this.datatype = datatype;
 	}
 
 }

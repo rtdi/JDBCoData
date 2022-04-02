@@ -1,9 +1,11 @@
 package io.rtdi.appcontainer.odata.entity.data.expression;
 
 import java.nio.CharBuffer;
+import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
+import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
 public class BinaryExpression extends Expression {
 
@@ -11,8 +13,8 @@ public class BinaryExpression extends Expression {
 	private IBooleanExpression left;
 	private IBooleanExpression right;
 
-	public BinaryExpression(Stack<Expression> stack, String operation) {
-		super(stack);
+	public BinaryExpression(Stack<Expression> stack, String operation, ODataSchema table, List<Object> params) {
+		super(stack, table, params);
 		this.operation = operation;
 		left = (IBooleanExpression) stack.pop();
 	}
@@ -20,7 +22,7 @@ public class BinaryExpression extends Expression {
 	@Override
 	protected void parse(CharBuffer in) throws ODataException {
 		do {
-			Expression e = ExpressionSet.getNextExpression(in, stack);
+			Expression e = ExpressionSet.getNextExpression(in, stack, table, getParams());
 			if (e != null) {
 				addStack(e).parse(in);
 			}
@@ -37,7 +39,7 @@ public class BinaryExpression extends Expression {
 	}
 
 	@Override
-	public CharSequence getSQL() {
+	public CharSequence getSQL() throws ODataException {
 		return left.getSQL() + " " + getSQLOperation(operation) + " " + right.getSQL();
 	}
 

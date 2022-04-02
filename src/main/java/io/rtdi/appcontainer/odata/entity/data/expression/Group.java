@@ -1,15 +1,17 @@
 package io.rtdi.appcontainer.odata.entity.data.expression;
 
 import java.nio.CharBuffer;
+import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
+import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
 public class Group extends ExpressionSet implements IBooleanExpression {
 	private IBooleanExpression group;
 
-	public Group(Stack<Expression> stack) {
-		super(stack);
+	public Group(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+		super(stack, table, params);
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public class Group extends ExpressionSet implements IBooleanExpression {
 	}
 
 	@Override
-	public CharSequence getSQL() {
+	public CharSequence getSQL() throws ODataException {
 		return "(" + group.getSQL() + ") ";
 	}
 

@@ -91,10 +91,10 @@ public abstract class JDBCoDataService {
 		try {
 				EntitySets ret = new EntitySets();
 				ret.addTable("TABLE");
-				return createResponse(ret, format, request);
+				return createResponse(200, ret, format, request);
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
-			return Response.status(500).entity(error).build();
+			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
 	
@@ -147,11 +147,11 @@ public abstract class JDBCoDataService {
 				Metadata ret = new Metadata();
 				ODataSchema table = getMetadata(conn, identifer);
 				ret.addObject(table);
-				return createResponse(ret, format, request);
+				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
-			return Response.status(500).entity(error).build();
+			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
 
@@ -227,7 +227,7 @@ public abstract class JDBCoDataService {
     		String format
     		) {
 		try {
-			int maxpagesize = 5000;
+			Integer maxpagesize = 5000;
 			// Prefer: odata.track-changes,odata.maxpagesize=3
 			Enumeration<String> preferences = request.getHeaders("Prefer");
 			if (preferences != null) {
@@ -245,8 +245,23 @@ public abstract class JDBCoDataService {
 					}
 				}
 			}
+			int resultsetlimit = 5000;
+			if (request.getHeader("resultsetlimit") != null) {
+				try {
+					resultsetlimit = Integer.valueOf(request.getHeader("resultsetlimit"));
+					if (resultsetlimit < 1000) {
+						resultsetlimit = 1000;
+					}
+				} catch (NumberFormatException e) {
+					resultsetlimit = 5000;
+				}
+			}
 			String schema = ODataUtils.decodeName(schemaraw);
 			String name = ODataUtils.decodeName(nameraw);
+			int hardlimit = this.getSQLResultSetLimit(schema, name, request);
+			if (resultsetlimit > hardlimit) {
+				resultsetlimit = hardlimit;
+			}
 			ODataIdentifier identifier = createODataIdentifier(schema, name);
 			AsyncResultSet query = null;
 			if (skiptoken != null) {
@@ -258,7 +273,7 @@ public abstract class JDBCoDataService {
 						throw new ODataException("The nextLink/skiptoken is no longer valid");
 					} else {
 						ODataResultSet ret = query.fetchRecords(skip, top, AsyncResultSet.tokenToPageid(skiptoken));
-						return createResponse(ret, format, request);
+						return createResponse(200, ret, format, request);
 					}
 				} catch (NumberFormatException e) {
 					throw new ODataException("Invalid $skiptoken");
@@ -274,24 +289,38 @@ public abstract class JDBCoDataService {
 				}
 				if (skip == null || skip == 0) {
 				// Case 2: The client wants to have new data, so a new query must be executed
-					query = new AsyncResultSet(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, this);
+					query = new AsyncResultSet(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
 					addToResultSetCache(resultsetid, query);
 				} else {
 					// Case 3: First call queried the first 100 rows, now the next 100 rows are requested
 					query = this.getResultSetCache(resultsetid);
 					if (query == null) {
 						// No such query is in the cache - no other option than to execute it again
-						query = new AsyncResultSet(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, this);
+						query = new AsyncResultSet(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
 						addToResultSetCache(resultsetid, query);
 					}
 				}
 				ODataResultSet ret = query.fetchRecords(skip, top, null);
-				return createResponse(ret, format, request);
+				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
-			return Response.status(500).entity(error).build();
+			return createResponse(error.getStatusCode(), error, format, request);
 		}
+	}
+
+	/**
+	 * To protect the server from caching millions of rows, there must be a hard limit of rows it produces at the outmost.
+	 * The default is 5000 rows but it can be changed to any number larger than 100. It can even be dynamic based on the object 
+	 * data is read from or the typ of request - UI vs massdata consumers.
+	 * 
+	 * @param request The httpRequest to decide on e.g. the type of query 
+	 * @param name is the database object name
+	 * @param schema the database schema of the object
+	 * @return the number of rows a query will return at the outmost
+	 */
+	protected int getSQLResultSetLimit(String schema, String name, HttpServletRequest request) {
+		return 5000;
 	}
 
 	@Operation(
@@ -353,7 +382,7 @@ public abstract class JDBCoDataService {
 				ODataSchema table = getMetadata(conn, identifier);
 				ODataKeyClause where = new ODataKeyClause(keys, table);
 				ODataSelectClause projection = new ODataSelectClause(select, table);
-				String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, table);
+				String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, 1, table);
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 					where.setPreparedStatementParameters(stmt);
 					try (ResultSet rs = stmt.executeQuery(); ) {
@@ -369,13 +398,13 @@ public abstract class JDBCoDataService {
 							}
 							ret.addRow(row);
 						}
-						return createResponse(ret, format, request);
+						return createResponse(200, ret, format, request);
 					}
 				}
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
-			return Response.status(500).entity(error).build();
+			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
 	
@@ -430,25 +459,25 @@ public abstract class JDBCoDataService {
 				ODataIdentifier identifier = createODataIdentifier(schema, name);
 				ODataSchema table = getMetadata(conn, identifier);
 				ODataFilterClause where = new ODataFilterClause(filter, table);
-				String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, table);
+				String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, 1, table);
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 					try (ResultSet rs = stmt.executeQuery(); ) {
 						if (rs.next()) {
-							return createResponse(rs.getInt(1), format, request);
+							return createResponse(200, rs.getInt(1), format, request);
 						} else {
-							return createResponse(Integer.valueOf(0), format, request);
+							return createResponse(200, Integer.valueOf(0), format, request);
 						}
 					}
 				}
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
-			return Response.status(500).entity(error).build();
+			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
 
-	private static Response createResponse(Object entity, String format, HttpServletRequest request) {
-		ResponseBuilder r = Response.ok(entity).header("OData-Version", ODataUtils.VERSIONVALUE);
+	private static Response createResponse(int httpstatus, Object entity, String format, HttpServletRequest request) {
+		ResponseBuilder r = Response.status(httpstatus).entity(entity).header("OData-Version", ODataUtils.VERSIONVALUE);
 		if (format != null) {
 			/*
 			 * If a valid format parameter has been passed, it takes precedence.
@@ -475,7 +504,7 @@ public abstract class JDBCoDataService {
 			Cache<ODataIdentifier, ODataSchema> cache = (Cache<ODataIdentifier, ODataSchema>) session.getAttribute("TABLEMETADATACACHE");
 			if (cache == null) {
 				cache = Caffeine.newBuilder()
-						.expireAfterWrite(Duration.ofMinutes(5L))
+						.expireAfterWrite(Duration.ofMinutes(getTableMetadataCacheTimeout()))
 						.build();
 				session.setAttribute("TABLEMETADATACACHE", cache);
 			}
@@ -490,6 +519,16 @@ public abstract class JDBCoDataService {
 		return table;
 	}
 	
+	/**
+	 * A table might get altered - frequently in the development system, less frequently in the production system. 
+	 * By overwriting this return value, this can be controlled from the outside.
+	 * 
+	 * @return the number of minutes the table metadata should be caches since last read - default is 5 minutes
+	 */
+	protected long getTableMetadataCacheTimeout() {
+		return 5L;
+	}
+
 	public AsyncResultSet getResultSetCache(String resultsetid) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
@@ -512,7 +551,7 @@ public abstract class JDBCoDataService {
 			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute("RESULTSETCACHE");
 			if (cache == null) {
 				cache = Caffeine.newBuilder()
-						.expireAfterWrite(Duration.ofMinutes(15L))
+						.expireAfterAccess(Duration.ofMinutes(getResultSetCacheTimeout()))
 						.build();
 				session.setAttribute("RESULTSETCACHE", cache);
 			}
@@ -523,11 +562,16 @@ public abstract class JDBCoDataService {
 		} else {
 			return false;
 		}
-
 	}
 
+	/**
+	 * @return the number of minutes the resultset should be retained in the cache since last access - default is 15 minutes
+	 */
+	protected long getResultSetCacheTimeout() {
+		return 15L;
+	}
 
-	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, Integer skip, Integer top, ODataSchema table) {
+	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
 		if (top == null) {
 			top = 5000;
 		}
@@ -538,6 +582,9 @@ public abstract class JDBCoDataService {
 			sql.append(" where ");
 			sql.append(where);
 		}
+		if (orderby != null) {
+			sql.append(" order by ").append(orderby);
+		}
 		sql.append(" limit ").append(top);
 		if (skip != null) {
 			sql.append(" offset ").append(skip);
@@ -545,6 +592,14 @@ public abstract class JDBCoDataService {
 		return sql.toString();
 	}
 
+	/**
+	 * This method should return a JDBC connection. It shall not be closed by the caller as its life cycle is completely controlled by
+	 * the reader thread.
+	 * 
+	 * @return a new JDBC Connection
+	 * @throws SQLException JDBC errors
+	 * @throws ServletException other errors
+	 */
 	protected abstract Connection getConnection() throws SQLException, ServletException;
 
 	protected ODataIdentifier createODataIdentifier(String schema, String objectname) {
@@ -619,7 +674,7 @@ public abstract class JDBCoDataService {
 					19.SCOPE_CATALOG String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF) 
 					20.SCOPE_SCHEMA String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF) 
 					21.SCOPE_TABLE String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF) 
-					22.SOURCE_DATA_TYPE short => source type of a distinct type or user-generatedRef type, SQL type from java.sql.Types (null if DATA_TYPEisn't DISTINCT or user-generated REF) 
+					22.SOURCE_DATA_TYPE short => source type of a distinct type or user-generatedRef type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF) 
 					23.IS_AUTOINCREMENT String => Indicates whether this column is auto incremented
 						- YES --- if the column is auto incremented 
 						- NO --- if the column is not auto incremented 
@@ -629,7 +684,7 @@ public abstract class JDBCoDataService {
 						- NO --- if this not a generated column 
 						- empty string --- if it cannot be determined whether this is a generated column 
 				 */
-				EntityTypeProperty col = table.getEntityType().addColumn(ODataUtils.encodeName(rs.getString(4)), JDBCType.valueOf(rs.getInt(5)), rs.getInt(7), rs.getInt(9));
+				EntityTypeProperty col = table.getEntityType().addColumn(ODataUtils.encodeName(rs.getString(4)), JDBCType.valueOf(rs.getInt(5)), rs.getString(6), rs.getInt(7), rs.getInt(9));
 				String nullable = rs.getString(18);
 				if ("NO".equals(nullable)) {
 					col.setNullable(Boolean.FALSE);

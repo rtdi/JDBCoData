@@ -3,6 +3,8 @@ package io.rtdi.appcontainer.odata.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.xml.bind.annotation.XmlElement;
+
 public class SingleError {
 
 	private String code;
@@ -14,10 +16,12 @@ public class SingleError {
 		innererror = new InnerError(e);
 	}
 
+	@XmlElement
 	public String getCode() {
 		return code;
 	}
 
+	@XmlElement
 	public String getMessage() {
 		return message;
 	}
@@ -28,6 +32,7 @@ public class SingleError {
 	      "context": {...}
 	}
 	 */
+	@XmlElement
 	public InnerError getInnererror() {
 		return innererror;
 	}
@@ -45,6 +50,7 @@ public class SingleError {
 			}
 		}
 		
+		@XmlElement
 		public List<String> getTrace() {
 			return trace;
 		}

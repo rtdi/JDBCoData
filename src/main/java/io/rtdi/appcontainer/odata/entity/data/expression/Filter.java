@@ -1,9 +1,11 @@
 package io.rtdi.appcontainer.odata.entity.data.expression;
 
 import java.nio.CharBuffer;
+import java.util.ArrayList;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
+import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
 public class Filter extends ExpressionSet implements IBooleanExpression {
 	private Expression expression;
@@ -12,8 +14,8 @@ public class Filter extends ExpressionSet implements IBooleanExpression {
 	 * http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#_Toc31360957
 	 */
 	
-	public Filter() throws ODataException {
-		super(new Stack<>());
+	public Filter(ODataSchema table) throws ODataException {
+		super(new Stack<>(), table, new ArrayList<>());
 	}
 
 	@Override
@@ -29,8 +31,8 @@ public class Filter extends ExpressionSet implements IBooleanExpression {
 	}
 
 	@Override
-	public CharSequence getSQL() {
+	public CharSequence getSQL() throws ODataException {
 		return expression.getSQL();
 	}
-	
+
 }
