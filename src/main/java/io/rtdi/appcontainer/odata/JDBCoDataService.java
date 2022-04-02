@@ -34,7 +34,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
-import net.snowflake.client.jdbc.internal.google.api.client.http.HttpStatusCodes;
 
 public abstract class JDBCoDataService {
 	public static final String ROWID = "__ROWID";
@@ -92,7 +91,7 @@ public abstract class JDBCoDataService {
 		try {
 				EntitySets ret = new EntitySets();
 				ret.addTable("TABLE");
-				return createResponse(HttpStatusCodes.STATUS_CODE_OK, ret, format, request);
+				return createResponse(200, ret, format, request);
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
@@ -148,7 +147,7 @@ public abstract class JDBCoDataService {
 				Metadata ret = new Metadata();
 				ODataSchema table = getMetadata(conn, identifer);
 				ret.addObject(table);
-				return createResponse(HttpStatusCodes.STATUS_CODE_OK, ret, format, request);
+				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
@@ -274,7 +273,7 @@ public abstract class JDBCoDataService {
 						throw new ODataException("The nextLink/skiptoken is no longer valid");
 					} else {
 						ODataResultSet ret = query.fetchRecords(skip, top, AsyncResultSet.tokenToPageid(skiptoken));
-						return createResponse(HttpStatusCodes.STATUS_CODE_OK, ret, format, request);
+						return createResponse(200, ret, format, request);
 					}
 				} catch (NumberFormatException e) {
 					throw new ODataException("Invalid $skiptoken");
@@ -302,7 +301,7 @@ public abstract class JDBCoDataService {
 					}
 				}
 				ODataResultSet ret = query.fetchRecords(skip, top, null);
-				return createResponse(HttpStatusCodes.STATUS_CODE_OK, ret, format, request);
+				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
@@ -399,7 +398,7 @@ public abstract class JDBCoDataService {
 							}
 							ret.addRow(row);
 						}
-						return createResponse(HttpStatusCodes.STATUS_CODE_OK, ret, format, request);
+						return createResponse(200, ret, format, request);
 					}
 				}
 			}
@@ -464,9 +463,9 @@ public abstract class JDBCoDataService {
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 					try (ResultSet rs = stmt.executeQuery(); ) {
 						if (rs.next()) {
-							return createResponse(HttpStatusCodes.STATUS_CODE_OK, rs.getInt(1), format, request);
+							return createResponse(200, rs.getInt(1), format, request);
 						} else {
-							return createResponse(HttpStatusCodes.STATUS_CODE_OK, Integer.valueOf(0), format, request);
+							return createResponse(200, Integer.valueOf(0), format, request);
 						}
 					}
 				}
