@@ -118,7 +118,7 @@ public class EntityTypeProperty extends ODataBase {
 	@JsonProperty(ODataUtils.TYPE)
 	public String getType() {
 		if (this.odatatype != null) {
-			return this.odatatype.name();
+			return this.odatatype.getText();
 		} else {
 			return null;
 		}
