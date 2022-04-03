@@ -2,15 +2,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.rtdi.appcontainer</groupId>
 	<artifactId>JDBCoData</artifactId>
-	<version>0.1.2</version>
+	<version>0.1.3</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>An oData service for databases</description>
 	<packaging>jar</packaging>
 	<url>https://www.rtdi.io/</url>
 	<scm>
-		<connection>scm:git:git://github.com/rtdi/KafkaAvro.git</connection>
+		<connection>scm:git:git://github.com/rtdi/JDBCoData.git</connection>
 		<developerConnection>scm:git:ssh:git@github.com:rtdi/JDBCoData.git</developerConnection>
-		<url>https://github.com/rtdi/KafkaAvro</url>
+		<url>https://github.com/rtdi/JDBCoData</url>
 	</scm>
 	<developers>
 		<developer>

@@ -5,11 +5,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.Enumeration;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
@@ -24,28 +20,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.ws.rs.core.Configuration;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
 
-public abstract class JDBCoDataService {
+public abstract class JDBCoDataService extends JDBCoDataBase {
 	public static final String ROWID = "__ROWID";
-
-	@Context
-    protected Configuration configuration;
-
-	@Context 
-	protected ServletContext servletContext;
-	
-	@Context 
-	protected HttpServletRequest request;
 
 	@Operation(
 			summary = "oData list of EntitySets",
@@ -143,9 +122,9 @@ public abstract class JDBCoDataService {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
 				String name = ODataUtils.decodeName(nameraw);
-				ODataIdentifier identifer = createODataIdentifier(schema, name);
+				ODataIdentifier identifier = createODataIdentifier(schema, name);
 				Metadata ret = new Metadata();
-				ODataSchema table = getMetadata(conn, identifer);
+				ODataSchema table = getMetadata(conn, identifier);
 				ret.addObject(table);
 				return createResponse(200, ret, format, request);
 			}
@@ -268,7 +247,7 @@ public abstract class JDBCoDataService {
 				// Case 1: The client asked for the next page using the skiptoken, the server must provide that
 				try {
 					String resultsetid = String.valueOf(AsyncResultSet.tokenToresultsetid(skiptoken));
-					query = this.getResultSetCache(resultsetid);
+					query = getResultSetCache(request, resultsetid);
 					if (query == null) {
 						throw new ODataException("The nextLink/skiptoken is no longer valid");
 					} else {
@@ -289,14 +268,14 @@ public abstract class JDBCoDataService {
 				}
 				if (skip == null || skip == 0) {
 				// Case 2: The client wants to have new data, so a new query must be executed
-					query = new AsyncResultSet(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
+					query = new AsyncResultSetQuery(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
 					addToResultSetCache(resultsetid, query);
 				} else {
 					// Case 3: First call queried the first 100 rows, now the next 100 rows are requested
-					query = this.getResultSetCache(resultsetid);
+					query = getResultSetCache(request, resultsetid);
 					if (query == null) {
 						// No such query is in the cache - no other option than to execute it again
-						query = new AsyncResultSet(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
+						query = new AsyncResultSetQuery(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
 						addToResultSetCache(resultsetid, query);
 					}
 				}
@@ -476,101 +455,6 @@ public abstract class JDBCoDataService {
 		}
 	}
 
-	private static Response createResponse(int httpstatus, Object entity, String format, HttpServletRequest request) {
-		ResponseBuilder r = Response.status(httpstatus).entity(entity).header("OData-Version", ODataUtils.VERSIONVALUE);
-		if (format != null) {
-			/*
-			 * If a valid format parameter has been passed, it takes precedence.
-			 */
-			if (format.equals("json")) {
-				r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-			} else if (format.equals("xml")) {
-				r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
-			}
-		} else if (request.getHeader(HttpHeaders.ACCEPT) == null) {
-			/*
-			 * Default format is XML if neither a $format nor an accept header has been sent
-			 */
-			r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
-		}
-		return r.build();
-	}
-
-	ODataSchema getMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
-		HttpSession session = request.getSession(false);
-		ODataSchema table;
-		if (session != null) {
-			@SuppressWarnings("unchecked")
-			Cache<ODataIdentifier, ODataSchema> cache = (Cache<ODataIdentifier, ODataSchema>) session.getAttribute("TABLEMETADATACACHE");
-			if (cache == null) {
-				cache = Caffeine.newBuilder()
-						.expireAfterWrite(Duration.ofMinutes(getTableMetadataCacheTimeout()))
-						.build();
-				session.setAttribute("TABLEMETADATACACHE", cache);
-			}
-			table = cache.getIfPresent(identifier);
-			if (table == null) {
-				table = readTableMetadata(conn, identifier);
-				cache.put(identifier, table);
-			}
-		} else {
-			table = readTableMetadata(conn, identifier);
-		}
-		return table;
-	}
-	
-	/**
-	 * A table might get altered - frequently in the development system, less frequently in the production system. 
-	 * By overwriting this return value, this can be controlled from the outside.
-	 * 
-	 * @return the number of minutes the table metadata should be caches since last read - default is 5 minutes
-	 */
-	protected long getTableMetadataCacheTimeout() {
-		return 5L;
-	}
-
-	public AsyncResultSet getResultSetCache(String resultsetid) {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			@SuppressWarnings("unchecked")
-			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute("RESULTSETCACHE");
-			if (cache == null) {
-				return null;
-			} else {
-				return cache.getIfPresent(resultsetid);
-			}
-		} else {
-			return null;
-		}
-	}
-	
-	public boolean addToResultSetCache(String resultsetid, AsyncResultSet resultset) {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			@SuppressWarnings("unchecked")
-			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute("RESULTSETCACHE");
-			if (cache == null) {
-				cache = Caffeine.newBuilder()
-						.expireAfterAccess(Duration.ofMinutes(getResultSetCacheTimeout()))
-						.build();
-				session.setAttribute("RESULTSETCACHE", cache);
-			}
-			if (cache.getIfPresent(resultsetid) == null) {
-				cache.put(resultsetid, resultset);
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @return the number of minutes the resultset should be retained in the cache since last access - default is 15 minutes
-	 */
-	protected long getResultSetCacheTimeout() {
-		return 15L;
-	}
-
 	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
 		if (top == null) {
 			top = 5000;
@@ -592,20 +476,6 @@ public abstract class JDBCoDataService {
 		return sql.toString();
 	}
 
-	/**
-	 * This method should return a JDBC connection. It shall not be closed by the caller as its life cycle is completely controlled by
-	 * the reader thread.
-	 * 
-	 * @return a new JDBC Connection
-	 * @throws SQLException JDBC errors
-	 * @throws ServletException other errors
-	 */
-	protected abstract Connection getConnection() throws SQLException, ServletException;
-
-	protected ODataIdentifier createODataIdentifier(String schema, String objectname) {
-		return new ODataIdentifier(schema, objectname);
-	}
-	
 	protected ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
 		ODataSchema table = null;
 		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
@@ -708,10 +578,6 @@ public abstract class JDBCoDataService {
 			}
 		}
 		return table;
-	}
-
-	public String getURL() {
-		return request.getRequestURI();
 	}
 }
 
