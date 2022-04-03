@@ -49,5 +49,13 @@ public class ODataSchema extends ODataBase {
 		data.put(container.getName(), container);
 		return data;
 	}
+
+	public void setEntityType(EntityType entitytype) {
+		this.entitytype = entitytype;
+	}
+
+	public void setContainer(EntityContainer container) {
+		this.container = container;
+	}
 	
 }
