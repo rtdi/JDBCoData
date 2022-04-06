@@ -71,17 +71,17 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
       		Integer top,
    		 	@Parameter(
    	  	    		description = "Skip the first n records for pagination",
-   	  	    		example = "400"
+   	  	    		example = "0"
    	  	    		)
      		Integer skip,
    		 	@Parameter(
    	  	    		description = "Skip token for pagination",
-   	  	    		example = "Server produced value"
+   	  	    		example = ""
    	  	    		)
      		String skiptoken,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {
@@ -180,7 +180,7 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
     public Response getODataMetadata(
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {

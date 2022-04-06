@@ -63,7 +63,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String nameraw,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {
@@ -114,7 +114,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String nameraw,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {
@@ -176,7 +176,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String select,
    		 	@Parameter(
    	  	    		description = "An oData filter condition",
-   	  	    		example = "USERNAME = 'ABC'"
+   	  	    		example = ""
    	  	    		)
      		String filter,
    		 	@Parameter(
@@ -191,17 +191,17 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
       		Integer top,
    		 	@Parameter(
    	  	    		description = "Skip the first n records for pagination",
-   	  	    		example = "400"
+   	  	    		example = "0"
    	  	    		)
      		Integer skip,
    		 	@Parameter(
    	  	    		description = "Skip token for pagination",
-   	  	    		example = "Server produced value"
+   	  	    		example = ""
    	  	    		)
      		String skiptoken,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {
@@ -339,7 +339,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String nameraw,
    		 	@Parameter(
    	 	    		description = "A text with either a single value - in case the primary key consists of a single column only - or comma separated list of key=value components",
-   	 	    		example = "OrderId=1234,ProductId=1234"
+   	 	    		example = "PUBLIC"
    	 	    		)
     		String keys,
    		 	@Parameter(
@@ -349,7 +349,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String select,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {
@@ -422,12 +422,12 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String nameraw,
    		 	@Parameter(
    	  	    		description = "An oData filter condition",
-   	  	    		example = "USERNAME = 'ABC'"
+   	  	    		example = ""
    	  	    		)
      		String filter,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
-   	 	    		example = "$format=json"
+   	 	    		example = "json"
    	 	    		)
     		String format
     		) {
