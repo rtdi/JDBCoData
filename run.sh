@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run -it --rm -p 8080:8080 -e ODATA_SNOWFLAKE_ACCOUNT -e ODATA_SNOWFLAKE_USER -e ODATA_SNOWFLAKE_PASSWORD -e ODATA_SNOWFLAKE_DB inergy/snowflake-odata

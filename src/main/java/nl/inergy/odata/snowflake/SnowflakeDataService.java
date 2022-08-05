@@ -2,7 +2,6 @@ package nl.inergy.odata.snowflake;
 
 import io.rtdi.appcontainer.odata.JDBCoDataService;
 import io.rtdi.appcontainer.odata.ODataIdentifier;
-import jakarta.annotation.Resource;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -83,7 +82,6 @@ public class SnowflakeDataService extends JDBCoDataService {
             @QueryParam("$format")
                     String format
     ) {
-        System.out.println("filter: " + filter);
         return super.getODataEntitySet(schemaraw, nameraw, select, filter, order, top, skip, skiptoken, format);
     }
 
