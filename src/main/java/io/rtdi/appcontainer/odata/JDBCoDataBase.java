@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
+import javax.naming.NamingException;
 
 public abstract class JDBCoDataBase {
 
@@ -136,8 +137,9 @@ public abstract class JDBCoDataBase {
 	 * @return a new JDBC Connection
 	 * @throws SQLException JDBC errors
 	 * @throws ServletException other errors
+	 * @throws NamingException JNDI lookup errors
 	 */
-	protected abstract Connection getConnection() throws SQLException, ServletException;
+	protected abstract Connection getConnection() throws SQLException, ServletException, NamingException;
 
 	protected ODataIdentifier createODataIdentifier(String schema, String objectname) {
 		return new ODataIdentifier(schema, objectname);

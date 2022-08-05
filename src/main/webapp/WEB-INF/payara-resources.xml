@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+    <jdbc-connection-pool name="jdbc/connectionPool"
+                          res-type="javax.sql.DataSource"
+                          datasource-classname="net.snowflake.client.jdbc.SnowflakeBasicDataSource"
+                          pool-resize-quantity="2"
+                          max-pool-size="16"
+                          steady-pool-size="8">
+        <property name="URL" value="jdbc:snowflake://https://${ENV=ODATA_SNOWFLAKE_ACCOUNT}.snowflakecomputing.com?db=${ENV=ODATA_SNOWFLAKE_DB}"/>
+        <property name="User" value="${ENV=ODATA_SNOWFLAKE_USER}"/>
+        <property name="Password" value="${ENV=ODATA_SNOWFLAKE_PASSWORD}"/>
+        <property name="driverClass" value="net.snowflake.client.jdbc.SnowflakeDriver"/>
+    </jdbc-connection-pool>
+
+    <jdbc-resource enabled="true" jndi-name="jdbc/snowflakeSource" object-type="user" pool-name="jdbc/connectionPool">
+        <description>Snowflake data source</description>
+    </jdbc-resource>
+
+</resources>

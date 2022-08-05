@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.rtdi.appcontainer</groupId>
-	<artifactId>JDBCoData</artifactId>
-	<version>0.1.4</version>
+	<groupId>nl.inergy.connector</groupId>
+	<artifactId>snowflake-odata</artifactId>
+	<version>0.2.0</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>An oData service for databases</description>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<url>https://www.rtdi.io/</url>
 	<scm>
 		<connection>scm:git:git://github.com/rtdi/JDBCoData.git</connection>
@@ -19,10 +19,16 @@
 			<organization>rtdi.io GmbH</organization>
 			<organizationUrl>https://www.rtdi.io</organizationUrl>
 		</developer>
+		<developer>
+			<name>Richard Kooijman</name>
+			<email>richard.kooijman@inergy.nl</email>
+			<organization>Inergy</organization>
+			<organizationUrl>https://www.inergy.nl</organizationUrl>
+		</developer>
 	</developers>
 	<licenses>
 		<license>
-			<name>Commerical License - please contact rtdi.io</name>
+			<name>Commercial License - please contact rtdi.io</name>
 			<url>http://www.rtdi.io</url>
 		</license>
 	</licenses>
@@ -37,9 +43,25 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit.jupiter.version>5.8.1</junit.jupiter.version>
 		<log4j.version>2.17.0</log4j.version>
+		<cargo-maven3-plugin.version>1.9.13</cargo-maven3-plugin.version>
+		<payara.version>5.2022.2</payara.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 	</properties>
 	<build>
 		<finalName>${project.artifactId}</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>fish.payara.maven.plugins</groupId>
+					<artifactId>payara-micro-maven-plugin</artifactId>
+					<version>1.0.4</version>
+					<configuration>
+						<payaraVersion>${payara.version}</payaraVersion>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -91,39 +113,88 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-			      <groupId>org.apache.maven.plugins</groupId>
-			      <artifactId>maven-gpg-plugin</artifactId>
-			      <version>1.6</version>
-			      <executions>
-				  <execution>
-				      <id>sign-artifacts</id>
-				      <phase>verify</phase>
-				      <goals>
-					  <goal>sign</goal>
-				      </goals>
-				      <configuration>
-					  <!-- Prevent `gpg` from using pinentry programs -->
-					  <gpgArguments>
-					      <arg>--pinentry-mode</arg>
-					      <arg>loopback</arg>
-					  </gpgArguments>
-				      </configuration>
-				  </execution>
-			      </executions>
-			</plugin>
+<!--			<plugin>-->
+<!--			      <groupId>org.apache.maven.plugins</groupId>-->
+<!--			      <artifactId>maven-gpg-plugin</artifactId>-->
+<!--			      <version>1.6</version>-->
+<!--			      <executions>-->
+<!--				  <execution>-->
+<!--				      <id>sign-artifacts</id>-->
+<!--				      <phase>verify</phase>-->
+<!--				      <goals>-->
+<!--					  <goal>sign</goal>-->
+<!--				      </goals>-->
+<!--				      <configuration>-->
+<!--					  &lt;!&ndash; Prevent `gpg` from using pinentry programs &ndash;&gt;-->
+<!--					  <gpgArguments>-->
+<!--					      <arg>&#45;&#45;pinentry-mode</arg>-->
+<!--					      <arg>loopback</arg>-->
+<!--					  </gpgArguments>-->
+<!--				      </configuration>-->
+<!--				  </execution>-->
+<!--			      </executions>-->
+<!--			</plugin>-->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.7</version>
 			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>org.codehaus.cargo</groupId>-->
+<!--				<artifactId>cargo-maven3-plugin</artifactId>-->
+<!--				<version>${cargo-maven3-plugin.version}</version>-->
+<!--				<configuration>-->
+<!--					<wait>true</wait>-->
+<!--					<container>-->
+<!--						<containerId>jetty11x</containerId>-->
+<!--						<type>embedded</type>-->
+<!--					</container>-->
+<!--					<configuration>-->
+<!--						<properties>-->
+<!--							<cargo.servlet.port>8082</cargo.servlet.port>-->
+<!--						</properties>-->
+<!--					</configuration>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>fish.payara.extras</groupId>
+				<artifactId>payara-micro</artifactId>
+				<version>${payara.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>fish.payara.extras</groupId>
+				<artifactId>payara-embedded-all</artifactId>
+				<version>${payara.version}</version>
+				<scope>provided</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<version>5.0.0</version>
+			<groupId>jakarta.platform</groupId>
+			<artifactId>jakarta.jakartaee-web-api</artifactId>
+			<version>9.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>4.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -134,6 +205,11 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.13.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 			<version>2.13.2</version>
 		</dependency>
 		<dependency>
@@ -155,25 +231,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>jakarta.ws.rs</groupId>
-		    <artifactId>jakarta.ws.rs-api</artifactId>
-		    <version>3.0.0</version>
-		    <scope>provided</scope>
-		</dependency>
-		<dependency>
 		    <groupId>com.github.ben-manes.caffeine</groupId>
 		    <artifactId>caffeine</artifactId>
 		    <version>3.0.6</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.fasterxml.jackson.dataformat</groupId>
-		    <artifactId>jackson-dataformat-xml</artifactId>
-		    <version>2.13.2</version>
-		</dependency>
-		<dependency>
-		    <groupId>jakarta.xml.bind</groupId>
-		    <artifactId>jakarta.xml.bind-api</artifactId>
-		    <version>4.0.0-RC3</version>
+			<groupId>net.snowflake</groupId>
+			<artifactId>snowflake-jdbc</artifactId>
+			<version>3.13.21</version>
 		</dependency>
 	</dependencies>
 </project>
