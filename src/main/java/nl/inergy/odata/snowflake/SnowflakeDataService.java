@@ -30,6 +30,19 @@ public class SnowflakeDataService extends JDBCoDataService {
 
     @Override
     @GET
+    @Path("/tables/{schema}/$metadata")
+    @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
+    public Response getODataMetadata(
+            @PathParam("schema")
+                    String schemaraw,
+            @QueryParam("$format")
+                    String format
+    ) {
+        return super.getODataMetadata(schemaraw, format);
+    }
+
+    @Override
+    @GET
     @Path("/tables/{schema}/{name}/")
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySets(
