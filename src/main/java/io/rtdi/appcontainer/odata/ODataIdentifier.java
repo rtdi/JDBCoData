@@ -1,7 +1,7 @@
 package io.rtdi.appcontainer.odata;
 
 public class ODataIdentifier {
-	public static final String ENTITYTPE = "ROW";
+	public static final String ENTITYTYPE = "ROW";
 	public static final String ENTITYSETNAME = "RS";
 	public static final String ENTITYNAME = "DBOBJECT";
 	private String dbschema;
@@ -26,7 +26,7 @@ public class ODataIdentifier {
 	}
 
 	public ODataIdentifier(String dbschema, String dbobjectname) {
-		this(dbschema, dbobjectname, ENTITYNAME, ENTITYSETNAME, ENTITYTPE);
+		this(dbschema, dbobjectname, ENTITYNAME, ENTITYSETNAME, ENTITYTYPE);
 	}
 
 	public String getDBSchema() {
