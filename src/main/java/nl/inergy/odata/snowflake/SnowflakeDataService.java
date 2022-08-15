@@ -2,6 +2,7 @@ package nl.inergy.odata.snowflake;
 
 import io.rtdi.appcontainer.odata.JDBCoDataService;
 import io.rtdi.appcontainer.odata.ODataIdentifier;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -9,12 +10,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import nl.inergy.odata.service.Roles;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Properties;
 
 @Path("/data")
 public class SnowflakeDataService extends JDBCoDataService {
@@ -31,6 +32,7 @@ public class SnowflakeDataService extends JDBCoDataService {
     @Override
     @GET
     @Path("/tables/{schema}/{name}/")
+    @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySets(
             @PathParam("schema")
@@ -46,6 +48,7 @@ public class SnowflakeDataService extends JDBCoDataService {
     @Override
     @GET
     @Path("/tables/{schema}/{name}/$metadata")
+    @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
     public Response getODataMetadata(
             @PathParam("schema")
@@ -61,6 +64,7 @@ public class SnowflakeDataService extends JDBCoDataService {
     @Override
     @GET
     @Path("/tables/{schema}/{name}/" + ODataIdentifier.ENTITYSETNAME)
+    @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySet(
             @PathParam("schema")
@@ -88,6 +92,7 @@ public class SnowflakeDataService extends JDBCoDataService {
     @Override
     @GET
     @Path("/tables/{schema}/{name}/" + ODataIdentifier.ENTITYSETNAME + "({keys})")
+    @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntityRow(
             @PathParam("schema")
@@ -107,6 +112,7 @@ public class SnowflakeDataService extends JDBCoDataService {
     @Override
     @GET
     @Path("/tables/{schema}/{name}/" + ODataIdentifier.ENTITYSETNAME + "/$count")
+    @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySetCount(
             @PathParam("schema")
