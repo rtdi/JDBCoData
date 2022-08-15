@@ -22,9 +22,6 @@ import javax.naming.NamingException;
 
 public abstract class JDBCoDataBase {
 
-	public static final String RESULTSETCACHE = "RESULTSETCACHE";
-	public static final String TABLEMETADATACACHE = "TABLEMETADATACACHE";
-
 	@Context
 	protected Configuration configuration;
 	@Context
@@ -56,7 +53,7 @@ public abstract class JDBCoDataBase {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			@SuppressWarnings("unchecked")
-			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute(RESULTSETCACHE);
+			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute("RESULTSETCACHE");
 			if (cache == null) {
 				return null;
 			} else {
@@ -72,12 +69,12 @@ public abstract class JDBCoDataBase {
 		ODataSchema table;
 		if (session != null) {
 			@SuppressWarnings("unchecked")
-			Cache<ODataIdentifier, ODataSchema> cache = (Cache<ODataIdentifier, ODataSchema>) session.getAttribute(TABLEMETADATACACHE);
+			Cache<ODataIdentifier, ODataSchema> cache = (Cache<ODataIdentifier, ODataSchema>) session.getAttribute("TABLEMETADATACACHE");
 			if (cache == null) {
 				cache = Caffeine.newBuilder()
 						.expireAfterWrite(Duration.ofMinutes(getTableMetadataCacheTimeout()))
 						.build();
-				session.setAttribute(TABLEMETADATACACHE, cache);
+				session.setAttribute("TABLEMETADATACACHE", cache);
 			}
 			table = cache.getIfPresent(identifier);
 			if (table == null) {
@@ -110,12 +107,12 @@ public abstract class JDBCoDataBase {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			@SuppressWarnings("unchecked")
-			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute(RESULTSETCACHE);
+			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute("RESULTSETCACHE");
 			if (cache == null) {
 				cache = Caffeine.newBuilder()
 						.expireAfterAccess(Duration.ofMinutes(getResultSetCacheTimeout()))
 						.build();
-				session.setAttribute(RESULTSETCACHE, cache);
+				session.setAttribute("RESULTSETCACHE", cache);
 			}
 			if (cache.getIfPresent(resultsetid) == null) {
 				cache.put(resultsetid, resultset);
@@ -144,11 +141,12 @@ public abstract class JDBCoDataBase {
 	 */
 	protected abstract Connection getConnection() throws SQLException, ServletException, NamingException;
 
- 	protected ODataIdentifier createODataIdentifier(String schema, String objectname) {
+	protected ODataIdentifier createODataIdentifier(String schema, String objectname) {
 		return new ODataIdentifier(schema, objectname);
 	}
 
 	public String getURL() {
 		return request.getRequestURI();
 	}
+
 }

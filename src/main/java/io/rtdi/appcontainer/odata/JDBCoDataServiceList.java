@@ -26,7 +26,6 @@ import jakarta.ws.rs.core.Response;
 
 public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 
-	public static final String TABLELIST = "___TABLELIST";
 	@Context
     protected Configuration configuration;
 
@@ -36,7 +35,7 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 	@Context 
 	protected HttpServletRequest request;
 
-	private ODataIdentifier identifier = new ODataIdentifier("PUBLIC", TABLELIST);
+	private ODataIdentifier identifier = new ODataIdentifier("PUBLIC", "___TABLELIST");
 	
 	private static ODataSchema schema;
 
@@ -87,9 +86,9 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
     		String format
     		) {
 		try {
-			AsyncResultSet resultset = JDBCoDataService.getResultSetCache(request, TABLELIST);
+			AsyncResultSet resultset = JDBCoDataService.getResultSetCache(request, "___TABLELIST");
 			if (resultset == null) {
-				resultset = new AsyncResultSetStatic(getConnection(), identifier , TABLELIST, 5000, 5000, this);
+				resultset = new AsyncResultSetStatic(getConnection(), identifier , "___TABLELIST", 5000, 5000, this);
 				try (Connection conn = resultset.conn;) {
 					try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), null, null, null);) {
 						while (rs.next()) {
@@ -114,7 +113,7 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 						resultset.readcompleted = true;
 					}
 				}
-				addToResultSetCache(TABLELIST, resultset);
+				addToResultSetCache("___TABLELIST", resultset);
 			}
 			if (skiptoken != null) {
 				// Case 1: The client asked for the next page using the skiptoken, the server must provide that
@@ -195,4 +194,5 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
+
 }

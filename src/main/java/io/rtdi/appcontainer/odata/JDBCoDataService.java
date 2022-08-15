@@ -5,9 +5,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
@@ -26,7 +24,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
 
 public abstract class JDBCoDataService extends JDBCoDataBase {
-
 	public static final String ROWID = "__ROWID";
 
 	@Operation(
@@ -34,147 +31,93 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			description = "Get the list of all EntitySets of this service",
 			responses = {
 					@ApiResponse(
-							responseCode = "200",
-							description = "All oData EntitySets",
-							content = {
-									@Content(
-											schema = @Schema(implementation = EntitySets.class)
-									)
-							}
-					),
+	                    responseCode = "200",
+	                    description = "All oData EntitySets",
+	                    content = {
+	                            @Content(
+	                                    schema = @Schema(implementation = EntitySets.class)
+	                            )
+	                    }
+                    ),
 					@ApiResponse(
-							responseCode = "500",
+							responseCode = "500", 
 							description = "Any exception thrown",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataError.class)
-									)
-							}
+		                    content = {
+		                            @Content(
+		                                    schema = @Schema(implementation = ODataError.class)
+		                            )
+		                    }
 					)
-			})
+            })
 	@Tag(name = "ReadDB")
-	public Response getODataEntitySets(
-			@Parameter(
-					description = "schemaname",
-					example = "INFORMATION_SCHEMA"
-			)
-					String schemaraw,
-			@Parameter(
-					description = "objectname",
-					example = "USERS"
-			)
-					String nameraw,
-			@Parameter(
-					description = "Optional parameter to overrule the format",
-					example = "json"
-			)
-					String format
-	) {
+    public Response getODataEntitySets(
+   		 	@Parameter(
+ 	    		description = "schemaname",
+ 	    		example = "INFORMATION_SCHEMA"
+ 	    		)
+    		String schemaraw,
+   		 	@Parameter(
+ 	    		description = "objectname",
+ 	    		example = "USERS"
+ 	    		)
+    		String nameraw,
+   		 	@Parameter(
+   	 	    		description = "Optional parameter to overrule the format",
+   	 	    		example = "json"
+   	 	    		)
+    		String format
+    		) {
 		try {
-			EntitySets ret = new EntitySets();
-			ret.addTable("TABLE");
-			return createResponse(200, ret, format, request);
+				EntitySets ret = new EntitySets();
+				ret.addTable("TABLE");
+				return createResponse(200, ret, format, request);
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
-
-	@Operation(
-			summary = "oData list of EntitySets",
-			description = "Get the list of all EntitySets of this service",
-			responses = {
-					@ApiResponse(
-							responseCode = "200",
-							description = "All oData EntitySets",
-							content = {
-									@Content(
-											schema = @Schema(implementation = EntitySets.class)
-									)
-							}
-					),
-					@ApiResponse(
-							responseCode = "500",
-							description = "Any exception thrown",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataError.class)
-									)
-							}
-					)
-			})
-	@Tag(name = "ReadDB")
-	public Response getODataMetadata(
-			@Parameter(
-					description = "schemaname",
-					example = "INFORMATION_SCHEMA"
-			)
-					String schemaraw,
-			@Parameter(
-					description = "Optional parameter to overrule the format",
-					example = "json"
-			)
-					String format
-	) {
-		try {
-			Metadata ret = new Metadata();
-			try (Connection conn = getConnection();) {
-				String schema = ODataUtils.decodeName(schemaraw);
-				List<ODataSchema> tableDataSchemas = getTableList(conn, schema);
-				for (ODataSchema tableDataSchema : tableDataSchemas) {
-					ODataIdentifier identifier = tableDataSchema.getIdentifier();
-					ODataSchema table = getMetadata(conn, identifier);
-					ret.addObject(table);
-				}
-			}
-			return createResponse(200, ret, format, request);
-		} catch (Exception e) {
-			ODataError error = new ODataError(e);
-			return createResponse(error.getStatusCode(), error, format, request);
-		}
-	}
-
+	
 	@Operation(
 			summary = "oData $metadata",
 			description = "The $metadata document describing the service",
 			responses = {
 					@ApiResponse(
-							responseCode = "200",
-							description = "The oData $metadata document about this service",
-							content = {
-									@Content(
-											schema = @Schema(implementation = Metadata.class)
-									)
-							}
-					),
+	                    responseCode = "200",
+	                    description = "The oData $metadata document about this service",
+	                    content = {
+	                            @Content(
+	                                    schema = @Schema(implementation = Metadata.class)
+	                            )
+	                    }
+                    ),
 					@ApiResponse(
-							responseCode = "500",
+							responseCode = "500", 
 							description = "Any exception thrown",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataError.class)
-									)
-							}
+		                    content = {
+		                            @Content(
+		                                    schema = @Schema(implementation = ODataError.class)
+		                            )
+		                    }
 					)
-			})
+            })
 	@Tag(name = "ReadDB")
-	public Response getODataMetadata(
-			@Parameter(
-					description = "schemaname",
-					example = "INFORMATION_SCHEMA"
-			)
-					String schemaraw,
-			@Parameter(
-					description = "objectname",
-					example = "USERS"
-			)
-					String nameraw,
-			@Parameter(
-					description = "Optional parameter to overrule the format",
-					example = "json"
-			)
-					String format
-	) {
+    public Response getODataMetadata(
+   		 	@Parameter(
+ 	    		description = "schemaname",
+ 	    		example = "INFORMATION_SCHEMA"
+ 	    		)
+    		String schemaraw,
+   		 	@Parameter(
+ 	    		description = "objectname",
+ 	    		example = "USERS"
+ 	    		)
+    		String nameraw,
+   		 	@Parameter(
+   	 	    		description = "Optional parameter to overrule the format",
+   	 	    		example = "json"
+   	 	    		)
+    		String format
+    		) {
 		try {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
@@ -196,72 +139,72 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			description = "Read the data of a table",
 			responses = {
 					@ApiResponse(
-							responseCode = "200",
-							description = "The resultset of the table",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataResultSet.class)
-									)
-							}
-					),
+	                    responseCode = "200",
+	                    description = "The resultset of the table",
+	                    content = {
+	                            @Content(
+	                                    schema = @Schema(implementation = ODataResultSet.class)
+	                            )
+	                    }
+                    ),
 					@ApiResponse(
-							responseCode = "500",
+							responseCode = "500", 
 							description = "Any exception thrown",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataError.class)
-									)
-							}
+		                    content = {
+		                            @Content(
+		                                    schema = @Schema(implementation = ODataError.class)
+		                            )
+		                    }
 					)
-			})
+            })
 	@Tag(name = "ReadDB")
-	public Response getODataEntitySet(
-			@Parameter(
-					description = "schemaname",
-					example = "INFORMATION_SCHEMA"
-			)
-					String schemaraw,
-			@Parameter(
-					description = "objectname",
-					example = "USERS"
-			)
-					String nameraw,
-			@Parameter(
-					description = "The list of columns to return, the projection in more general terms",
-					example = "USERNAME, ACTIVE"
-			)
-					String select,
-			@Parameter(
-					description = "An oData filter condition",
-					example = ""
-			)
-					String filter,
-			@Parameter(
-					description = "An oData order by clause",
-					example = "USERNAME"
-			)
-					String order,
-			@Parameter(
-					description = "Limit to n many records",
-					example = "100"
-			)
-					Integer top,
-			@Parameter(
-					description = "Skip the first n records for pagination",
-					example = "0"
-			)
-					Integer skip,
-			@Parameter(
-					description = "Skip token for pagination",
-					example = ""
-			)
-					String skiptoken,
-			@Parameter(
-					description = "Optional parameter to overrule the format",
-					example = "json"
-			)
-					String format
-	) {
+    public Response getODataEntitySet(
+   		 	@Parameter(
+ 	    		description = "schemaname",
+ 	    		example = "INFORMATION_SCHEMA"
+ 	    		)
+    		String schemaraw,
+   		 	@Parameter(
+ 	    		description = "objectname",
+ 	    		example = "USERS"
+ 	    		)
+    		String nameraw,
+   		 	@Parameter(
+   	 	    		description = "The list of columns to return, the projection in more general terms",
+   	 	    		example = "USERNAME, ACTIVE"
+   	 	    		)
+    		String select,
+   		 	@Parameter(
+   	  	    		description = "An oData filter condition",
+   	  	    		example = ""
+   	  	    		)
+     		String filter,
+   		 	@Parameter(
+   	    		description = "An oData order by clause",
+   	    		example = "USERNAME"
+   	    		)
+      		String order,
+   		 	@Parameter(
+   	    		description = "Limit to n many records",
+   	    		example = "100"
+   	    		)
+      		Integer top,
+   		 	@Parameter(
+   	  	    		description = "Skip the first n records for pagination",
+   	  	    		example = "0"
+   	  	    		)
+     		Integer skip,
+   		 	@Parameter(
+   	  	    		description = "Skip token for pagination",
+   	  	    		example = ""
+   	  	    		)
+     		String skiptoken,
+   		 	@Parameter(
+   	 	    		description = "Optional parameter to overrule the format",
+   	 	    		example = "json"
+   	 	    		)
+    		String format
+    		) {
 		try {
 			Integer maxpagesize = 5000;
 			// Prefer: odata.track-changes,odata.maxpagesize=3
@@ -273,7 +216,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 						int p = value.indexOf('=');
 						if (p != -1) {
 							try {
-								maxpagesize = Integer.valueOf(value.substring(p + 1));
+								maxpagesize = Integer.valueOf(value.substring(p+1));
 							} catch (NumberFormatException e) {
 								// to be ignored
 							}
@@ -320,11 +263,11 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					resultsetid = request.getHeader("ContextId");
 				}
 				if (resultsetid == null) {
-					String signature = schemaraw + nameraw + select + filter + order;
+					String signature = schemaraw + nameraw + select + filter + order; 
 					resultsetid = String.valueOf(signature.hashCode());
 				}
 				if (skip == null || skip == 0) {
-					// Case 2: The client wants to have new data, so a new query must be executed
+				// Case 2: The client wants to have new data, so a new query must be executed
 					query = new AsyncResultSetQuery(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
 					addToResultSetCache(resultsetid, query);
 				} else {
@@ -347,12 +290,12 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 
 	/**
 	 * To protect the server from caching millions of rows, there must be a hard limit of rows it produces at the outmost.
-	 * The default is 5000 rows but it can be changed to any number larger than 100. It can even be dynamic based on the object
+	 * The default is 5000 rows but it can be changed to any number larger than 100. It can even be dynamic based on the object 
 	 * data is read from or the typ of request - UI vs massdata consumers.
-	 *
-	 * @param request The httpRequest to decide on e.g. the type of query
-	 * @param name    is the database object name
-	 * @param schema  the database schema of the object
+	 * 
+	 * @param request The httpRequest to decide on e.g. the type of query 
+	 * @param name is the database object name
+	 * @param schema the database schema of the object
 	 * @return the number of rows a query will return at the outmost
 	 */
 	protected int getSQLResultSetLimit(String schema, String name, HttpServletRequest request) {
@@ -364,52 +307,52 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			description = "Read one row of a table based on its key",
 			responses = {
 					@ApiResponse(
-							responseCode = "200",
-							description = "The resultset of the row",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataResultSet.class)
-									)
-							}
-					),
+	                    responseCode = "200",
+	                    description = "The resultset of the row",
+	                    content = {
+	                            @Content(
+	                                    schema = @Schema(implementation = ODataResultSet.class)
+	                            )
+	                    }
+                    ),
 					@ApiResponse(
-							responseCode = "500",
+							responseCode = "500", 
 							description = "Any exception thrown",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataError.class)
-									)
-							}
+		                    content = {
+		                            @Content(
+		                                    schema = @Schema(implementation = ODataError.class)
+		                            )
+		                    }
 					)
-			})
+            })
 	@Tag(name = "ReadDB")
-	public Response getODataEntityRow(
-			@Parameter(
-					description = "schemaname",
-					example = "INFORMATION_SCHEMA"
-			)
-					String schemaraw,
-			@Parameter(
-					description = "objectname",
-					example = "USERS"
-			)
-					String nameraw,
-			@Parameter(
-					description = "A text with either a single value - in case the primary key consists of a single column only - or comma separated list of key=value components",
-					example = "PUBLIC"
-			)
-					String keys,
-			@Parameter(
-					description = "The list of columns to return, the projection in more general terms",
-					example = "USERNAME, ACTIVE"
-			)
-					String select,
-			@Parameter(
-					description = "Optional parameter to overrule the format",
-					example = "json"
-			)
-					String format
-	) {
+    public Response getODataEntityRow(
+   		 	@Parameter(
+ 	    		description = "schemaname",
+ 	    		example = "INFORMATION_SCHEMA"
+ 	    		)
+    		String schemaraw,
+   		 	@Parameter(
+ 	    		description = "objectname",
+ 	    		example = "USERS"
+ 	    		)
+    		String nameraw,
+   		 	@Parameter(
+   	 	    		description = "A text with either a single value - in case the primary key consists of a single column only - or comma separated list of key=value components",
+   	 	    		example = "PUBLIC"
+   	 	    		)
+    		String keys,
+   		 	@Parameter(
+   	 	    		description = "The list of columns to return, the projection in more general terms",
+   	 	    		example = "USERNAME, ACTIVE"
+   	 	    		)
+    		String select,
+   		 	@Parameter(
+   	 	    		description = "Optional parameter to overrule the format",
+   	 	    		example = "json"
+   	 	    		)
+    		String format
+    		) {
 		try {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
@@ -421,16 +364,16 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, 1, table);
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 					where.setPreparedStatementParameters(stmt);
-					try (ResultSet rs = stmt.executeQuery();) {
+					try (ResultSet rs = stmt.executeQuery(); ) {
 						ODataResultSet ret = new ODataResultSet();
 						String[] columnnames = new String[rs.getMetaData().getColumnCount()];
-						for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
-							columnnames[i] = ODataUtils.encodeName(rs.getMetaData().getColumnName(i + 1));
+						for (int i=0; i<rs.getMetaData().getColumnCount(); i++) {
+							columnnames[i] = ODataUtils.encodeName(rs.getMetaData().getColumnName(i+1));
 						}
 						while (rs.next()) {
 							ODataRecord row = new ODataRecord();
-							for (int i = 0; i < columnnames.length; i++) {
-								row.put(columnnames[i], ODataTypes.convert(rs.getObject(i + 1)));
+							for (int i=0; i<columnnames.length; i++) {
+								row.put(columnnames[i], ODataTypes.convert(rs.getObject(i+1)));
 							}
 							ret.addRow(row);
 						}
@@ -443,51 +386,51 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			return createResponse(error.getStatusCode(), error, format, request);
 		}
 	}
-
+	
 	@Operation(
 			summary = "oData EntitySet",
 			description = "Read the data of a table",
 			responses = {
 					@ApiResponse(
-							responseCode = "200",
-							description = "The resultset of the table",
-							content = {
-									@Content(schema = @Schema(type = "int"))
-							}
-					),
+	                    responseCode = "200",
+	                    description = "The resultset of the table",
+	                    content = {
+	                            @Content( schema = @Schema(type = "int"))
+	                    }
+                    ),
 					@ApiResponse(
-							responseCode = "500",
+							responseCode = "500", 
 							description = "Any exception thrown",
-							content = {
-									@Content(
-											schema = @Schema(implementation = ODataError.class)
-									)
-							}
+		                    content = {
+		                            @Content(
+		                                    schema = @Schema(implementation = ODataError.class)
+		                            )
+		                    }
 					)
-			})
+            })
 	@Tag(name = "ReadDB")
-	public Response getODataEntitySetCount(
-			@Parameter(
-					description = "schemaname",
-					example = "INFORMATION_SCHEMA"
-			)
-					String schemaraw,
-			@Parameter(
-					description = "objectname",
-					example = "USERS"
-			)
-					String nameraw,
-			@Parameter(
-					description = "An oData filter condition",
-					example = ""
-			)
-					String filter,
-			@Parameter(
-					description = "Optional parameter to overrule the format",
-					example = "json"
-			)
-					String format
-	) {
+    public Response getODataEntitySetCount(
+   		 	@Parameter(
+ 	    		description = "schemaname",
+ 	    		example = "INFORMATION_SCHEMA"
+ 	    		)
+    		String schemaraw,
+   		 	@Parameter(
+ 	    		description = "objectname",
+ 	    		example = "USERS"
+ 	    		)
+    		String nameraw,
+   		 	@Parameter(
+   	  	    		description = "An oData filter condition",
+   	  	    		example = ""
+   	  	    		)
+     		String filter,
+   		 	@Parameter(
+   	 	    		description = "Optional parameter to overrule the format",
+   	 	    		example = "json"
+   	 	    		)
+    		String format
+    		) {
 		try {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
@@ -497,7 +440,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				ODataFilterClause where = new ODataFilterClause(filter, table);
 				String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, 1, table);
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
-					try (ResultSet rs = stmt.executeQuery();) {
+					try (ResultSet rs = stmt.executeQuery(); ) {
 						if (rs.next()) {
 							return createResponse(200, rs.getInt(1), format, request);
 						} else {
@@ -535,7 +478,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 
 	protected ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
 		ODataSchema table = null;
-		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null);) {
+		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
 			if (rs.next()) {
 				/*
 					1.TABLE_CAT String => table catalog (may be null) 
@@ -552,24 +495,24 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				String tabletype = rs.getString(4);
 				String comment = rs.getString(5);
 				switch (tabletype) {
-					case "TABLE":
-					case "VIEW":
-					case "ALIAS":
-					case "SYNONYM":
-					case "SYSTEM TABLE":
-						table = new ODataSchema(identifier, tabletype);
-						table.setComment(comment);
-						table.addAnnotation(ODataUtils.JDBCSCHEMANAME, identifier.getDBSchema());
-						table.addAnnotation(ODataUtils.JDBCOBJECTNAME, identifier.getDBObjectName());
-						break;
-					default:
-						throw new ODataException(String.format("The object \"%s\".\"%s\" is not a table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
+				case "TABLE":
+				case "VIEW":
+				case "ALIAS":
+				case "SYNONYM":
+				case "SYSTEM TABLE":
+					table = new ODataSchema(identifier, tabletype);
+					table.setComment(comment);
+					table.addAnnotation(ODataUtils.JDBCSCHEMANAME, identifier.getDBSchema());
+					table.addAnnotation(ODataUtils.JDBCOBJECTNAME, identifier.getDBObjectName());
+					break;
+				default:
+					throw new ODataException(String.format("The object \"%s\".\"%s\" is not a table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
 				}
 			} else {
 				throw new ODataException(String.format("The object \"%s\".\"%s\" was not found as table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
 			}
 		}
-		try (ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null);) {
+		try (ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
 			while (rs.next()) {
 				/*
 					1.TABLE_CAT String => table catalog (may be null) 
@@ -619,9 +562,9 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					col.setNullable(Boolean.TRUE);
 				}
 				col.setComment(rs.getString(12));
-			}
+			}			
 		}
-		try (ResultSet rs = conn.getMetaData().getPrimaryKeys(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName());) {
+		try (ResultSet rs = conn.getMetaData().getPrimaryKeys(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName()); ) {
 			/*
 				1.TABLE_CAT String => table catalog (may be null) 
 				2.TABLE_SCHEM String => table schema (may be null) 
@@ -636,44 +579,5 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		}
 		return table;
 	}
-
-	protected List<ODataSchema> getTableList(Connection conn, String schema) throws SQLException, ODataException {
-		ArrayList<ODataSchema> tableList = new ArrayList<>();
-		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), schema, null, null);) {
-			while (rs.next()) {
-				/*
-					1.TABLE_CAT String => table catalog (may be null)
-					2.TABLE_SCHEM String => table schema (may be null)
-					3.TABLE_NAME String => table name
-					4.TABLE_TYPE String => table type. Typical types are "TABLE","VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY","LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-					5.REMARKS String => explanatory comment on the table (may be null)
-					6.TYPE_CAT String => the types catalog (may be null)
-					7.TYPE_SCHEM String => the types schema (may be null)
-					8.TYPE_NAME String => type name (may be null)
-					9.SELF_REFERENCING_COL_NAME String => name of the designated "identifier" column of a typed table (may be null)
-					10.REF_GENERATION String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
-				 */
-				String tablename = rs.getString(3);
-				String tabletype = rs.getString(4);
-				String comment = rs.getString(5);
-				ODataIdentifier identifier = new ODataIdentifier(schema, tablename);
-				switch (tabletype) {
-					case "TABLE":
-					case "VIEW":
-					case "ALIAS":
-					case "SYNONYM":
-					case "SYSTEM TABLE":
-						ODataSchema table = new ODataSchema(identifier, tabletype);
-						table.setComment(comment);
-						table.addAnnotation(ODataUtils.JDBCSCHEMANAME, identifier.getDBSchema());
-						table.addAnnotation(ODataUtils.JDBCOBJECTNAME, identifier.getDBObjectName());
-						tableList.add(table);
-						break;
-					default:
-						throw new ODataException(String.format("The object \"%s\".\"%s\" is not a table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
-				}
-			}
-		}
-		return tableList;
-	}
 }
+

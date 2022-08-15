@@ -11,10 +11,6 @@ public class ODataIdentifier {
 	private String entitytype;
 	private String identifier;
 
-	public ODataIdentifier(String dbschema, String entityname, String entitysetname, String entitytype) {
-		this(dbschema, null, entityname, entitysetname, entitytype);
-	}
-
 	public ODataIdentifier(String dbschema, String dbobjectname, String entityname, String entitysetname, String entitytype) {
 		super();
 		this.dbschema = dbschema;
@@ -28,7 +24,7 @@ public class ODataIdentifier {
 	public ODataIdentifier(String dbschema, String dbobjectname) {
 		this(dbschema, dbobjectname, ENTITYNAME, ENTITYSETNAME, ENTITYTYPE);
 	}
-
+	
 	public String getDBSchema() {
 		return dbschema;
 	}

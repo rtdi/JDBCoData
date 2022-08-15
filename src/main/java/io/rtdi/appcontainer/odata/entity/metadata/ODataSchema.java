@@ -18,10 +18,10 @@ public class ODataSchema extends ODataBase {
 	
 	public ODataSchema() {};
 
-	public ODataSchema(ODataIdentifier identifier, String tabletype) {
-		container = new EntityContainer(identifier, tabletype);
-		this.identifier = identifier;
-		entitytype = new EntityType(identifier);
+	public ODataSchema(ODataIdentifier identifer, String tabletype) {
+		container = new EntityContainer(identifer, tabletype);
+		this.identifier = identifer;
+		entitytype = new EntityType(identifer);
 	}
 
 	@XmlElement(name = "EntityType")
@@ -57,8 +57,5 @@ public class ODataSchema extends ODataBase {
 	public void setContainer(EntityContainer container) {
 		this.container = container;
 	}
-
-	public ODataIdentifier getIdentifier() {
-		return identifier;
-	}
+	
 }
