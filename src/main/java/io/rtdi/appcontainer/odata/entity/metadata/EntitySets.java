@@ -19,5 +19,4 @@ public class EntitySets extends LinkedHashMap<String, Object> {
 	public void addTable(String name) throws ODataException {
 		value.add(new ODataEntityMetadata(name, name));
 	}
-
 }
