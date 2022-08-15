@@ -1,3 +1,10 @@
+# OData Snowflake Service based on Payara Docker deployment
+
+This fork extends the base code with:
+- deployment in Docker image with Payara server
+- configured basic authentication (secrets are based on environment variables)
+
+
 # oData v4 for JDBC
 
 Using this library is simple: Enable JAX-RS, write a class with the `@Path` annotations extending the `JDBCoDataService` class.
