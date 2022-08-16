@@ -37,3 +37,7 @@ bin/
 pom.xml.versionsBackup
 
 env.sh
+secrets.sh
+*.swp
+*test*.sh
+
