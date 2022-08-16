@@ -7,4 +7,3 @@ ODATA_SNOWFLAKE_SCHEMA=BA
 
 ODATA_CLIENT_USER=${snowflake-odata-service-user}
 ODATA_CLIENT_PASSWORD=${snowflake-odata-service-password}
-

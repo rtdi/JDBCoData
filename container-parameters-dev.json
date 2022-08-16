@@ -1,0 +1,31 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "projectName": {
+            "value": "hansanders"
+        },
+        "environment": {
+            "value": "dev"
+        },
+        "containerRegistryUser": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/2430a957-b64b-4aad-9f52-1b0d61f1098f/resourceGroups/hansanders-dev/providers/Microsoft.KeyVault/vaults/hansanders-dev"
+                },
+                "secretName": "app-snowflake-odata-clientid"
+            }
+        },
+        "containerRegistryPassword": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/2430a957-b64b-4aad-9f52-1b0d61f1098f/resourceGroups/hansanders-dev/providers/Microsoft.KeyVault/vaults/hansanders-dev"
+                },
+                "secretName": "app-snowflake-odata-password"
+            }
+        },
+        "containerName": {
+            "value": "snowflake-odata"
+        }
+    }
+}
