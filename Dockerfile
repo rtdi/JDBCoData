@@ -9,6 +9,6 @@ RUN apk update && apk add python3 \
 	&& python3 -m ensurepip --upgrade \
 	&& python3 -m pip install -r requirements.txt
 COPY utils /opt
-#USER payara
+USER payara
 
 EXPOSE 8080
