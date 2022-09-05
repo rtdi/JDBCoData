@@ -98,12 +98,6 @@
                 "description": "Password voor de registry connectie"
             }
         },
-        "timifyUrl": {
-            "type": "securestring",
-            "metadata": {
-                "description": "URL van Snowflake OData applicatie"
-            }
-        },
         "keyvaultUrl": {
             "type": "string",
             "defaultValue": "[concat('https://', parameters('projectName'), '-', parameters('environment'), '.vault.azure.net/')]",
