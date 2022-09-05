@@ -1,3 +1,0 @@
-COMMERCIAL LICENSE
-
-In case this library should be used in other projects, please contact https://www.rtdi.io to negotiate an agreement specific to your needs.
