@@ -14,7 +14,7 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'hansanders containerregistry'
-  imageRepository: 'sendtotimify'
+  imageRepository: 'snowflake-odata'
   containerRegistry: 'hansanders.azurecr.io'
   dockerfilePath: 'Dockerfile'
   tag: '$(Build.BuildNumber)'
@@ -52,8 +52,8 @@ jobs:
       resourceGroupName: "hansanders-dev"
       location: "West Europe"
       templateLocation: "Linked artifact"
-      csmFile: "template/container-template.json"
-      csmParametersFile: "template/container-parameters-dev.json"
+      csmFile: "container-template.json"
+      csmParametersFile: "container-parameters-dev.json"
       overrideParameters: '-containerTag $(tag)'
       deploymentMode: Validation
 
@@ -73,5 +73,5 @@ jobs:
     condition:  and(succeeded(), or(startsWith(variables['build.sourceBranch'], 'refs/heads/develop'), startsWith(variables['build.sourceBranch'], 'refs/heads/release')))
     displayName: 'Publish Artifact: Container Templates'
     inputs:
-      PathtoPublish: "template/container-template.json"
+      PathtoPublish: "container-template.json"
       ArtifactName: container-templates

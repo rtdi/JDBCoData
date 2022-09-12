@@ -223,20 +223,6 @@
                 },
                 "restartPolicy": "Never"
             }
-        },
-        {
-            "name": "[concat(variables('containerGroupName'), '/Microsoft.Authorization/', guid(subscription().subscriptionId, variables('logicAppName')))]",
-            "type": "Microsoft.ContainerInstance/containerGroups/providers/roleAssignments",
-            "apiVersion": "2020-04-01-preview",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerInstance/containerGroups', variables('containerGroupName'))]",
-                "[resourceId('Microsoft.Logic/workflows', variables('logicAppName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('ContributorRole')]",
-                "scope": "[resourceId('Microsoft.ContainerInstance/containerGroups', variables('containerGroupName'))]",
-                "principalId": "[reference(resourceId('Microsoft.Logic/workflows', variables('logicAppName')), '2019-05-01', 'full').identity.principalId]"
-            }
         }
     ]
 }

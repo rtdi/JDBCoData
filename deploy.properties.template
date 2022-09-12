@@ -1,9 +1,9 @@
-ODATA_SNOWFLAKE_ACCOUNT=${snowflake-account-name}
-ODATA_SNOWFLAKE_USER=${snowflake-etl-username}
-ODATA_SNOWFLAKE_PASSWORD=${snowflake-etl-password}
-ODATA_SNOWFLAKE_DB=${snowflake-dwh-database}
-ODATA_SNOWFLAKE_WAREHOUSE=${snowflake-etl-warehouse}
-ODATA_SNOWFLAKE_SCHEMA=BA
+export ODATA_SNOWFLAKE_ACCOUNT=${snowflake-account-name}
+export ODATA_SNOWFLAKE_USER=${snowflake-etl-username}
+export ODATA_SNOWFLAKE_PASSWORD=${snowflake-etl-password}
+export ODATA_SNOWFLAKE_DB=${snowflake-dwh-database}
+export ODATA_SNOWFLAKE_WAREHOUSE=${snowflake-etl-warehouse}
+export ODATA_SNOWFLAKE_SCHEMA=BA
 
-ODATA_CLIENT_USER=${snowflake-odata-service-user}
-ODATA_CLIENT_PASSWORD=${snowflake-odata-service-password}
+export ODATA_CLIENT_USER=${snowflake-odata-service-user}
+export ODATA_CLIENT_PASSWORD=${snowflake-odata-service-password}

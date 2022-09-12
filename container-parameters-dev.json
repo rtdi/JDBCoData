@@ -13,7 +13,7 @@
                 "keyVault": {
                     "id": "/subscriptions/2430a957-b64b-4aad-9f52-1b0d61f1098f/resourceGroups/hansanders-dev/providers/Microsoft.KeyVault/vaults/hansanders-dev"
                 },
-                "secretName": "app-snowflake-odata-clientid"
+                "secretName": "app-odataservice-clientid"
             }
         },
         "containerRegistryPassword": {
@@ -21,7 +21,7 @@
                 "keyVault": {
                     "id": "/subscriptions/2430a957-b64b-4aad-9f52-1b0d61f1098f/resourceGroups/hansanders-dev/providers/Microsoft.KeyVault/vaults/hansanders-dev"
                 },
-                "secretName": "app-snowflake-odata-password"
+                "secretName": "app-odataservice-password"
             }
         },
         "containerName": {
