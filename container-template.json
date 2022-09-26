@@ -32,7 +32,7 @@
         },
         "subnetName": {
             "type": "string",
-            "defaultValue": "container",
+            "defaultValue": "snowflake-odata",
             "metadata": {
                 "description": "Subnet name"
             }
@@ -118,16 +118,23 @@
             "metadata": {
                 "description": "description"
             }
+        },
+        "servicePort": {
+            "type": "string",
+            "metadata": {
+                "description": "Port to open on the container and the public IP address."
+            },
+            "defaultValue": "8080"
         }
     },
     "variables": {
-        "networkProfileName": "[concat(parameters('projectName'),'-', parameters('environment'),'-aci-profile')]",
+        "networkProfileName": "[concat(parameters('projectName'), '-', parameters('environment'),'-', parameters('subnetName'), '-aci-profile')]",
         "interfaceConfigName": "eth0",
-        "interfaceIpConfig": "[concat(parameters('projectName'),'-', parameters('environment'),'-aci-ipconfig')]",
-        "containerGroupName": "[concat(parameters('projectName'),'-', parameters('environment'),'-',parameters('containerName'))]",
-        "workspaceName": "[concat(parameters('projectName'),'-', parameters('environment'))]",
-        "vnetName": "[concat(parameters('projectName'),'-', parameters('environment'))]",
-        "logicAppName": "[concat(parameters('projectName'),'-', parameters('environment'),'-',parameters('containerName'))]",
+        "interfaceIpConfig": "[concat(parameters('projectName'), '-', parameters('environment'), '-', parameters('subnetName'), '-aci-ipconfig')]",
+        "containerGroupName": "[concat(parameters('projectName'), '-', parameters('environment'), '-',parameters('containerName'))]",
+        "workspaceName": "[concat(parameters('projectName'), '-', parameters('environment'))]",
+        "vnetName": "[concat(parameters('projectName'), '-', parameters('environment'))]",
+        "logicAppName": "[concat(parameters('projectName'), '-', parameters('environment'),'-',parameters('containerName'))]",
         "webhook": "[concat('https://management.azure.com/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.ContainerInstance/containerGroups/', variables('containerGroupName'), '/start?api-version=2018-10-01')]",
         "ContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
     },
@@ -213,7 +220,12 @@
                                     "cpu": "[parameters('cpuCores')]",
                                     "memoryInGB": "[parameters('memoryInGb')]"
                                 }
-                            }
+                            },
+                            "ports": [
+                                {
+                                    "port": "[parameters('servicePort')]" 
+                                }
+                            ]
                         }
                     }
                 ],
