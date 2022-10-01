@@ -29,6 +29,12 @@ public abstract class JDBCoDataBase {
 	@Context
 	protected HttpServletRequest request;
 
+	protected static Response createResponse(int httpstatus, HttpServletRequest request) {
+		ResponseBuilder r = Response.status(httpstatus).header("OData-Version", ODataUtils.VERSIONVALUE);
+		r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+		return r.build();
+	}
+
 	protected static Response createResponse(int httpstatus, Object entity, String format, HttpServletRequest request) {
 		ResponseBuilder r = Response.status(httpstatus).entity(entity).header("OData-Version", ODataUtils.VERSIONVALUE);
 		if (format != null) {
@@ -148,5 +154,4 @@ public abstract class JDBCoDataBase {
 	public String getURL() {
 		return request.getRequestURI();
 	}
-
 }

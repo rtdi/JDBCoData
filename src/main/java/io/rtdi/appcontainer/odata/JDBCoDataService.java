@@ -5,6 +5,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Enumeration;
 
 import io.rtdi.appcontainer.odata.entity.ODataError;
@@ -579,5 +580,15 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		}
 		return table;
 	}
-}
 
+	protected Response healthCheck() {
+		try (Connection conn = getConnection()) {
+			String sql = "select 1";
+			Statement stmt = conn.createStatement();
+			stmt.execute(sql);
+			return createResponse(200, request);
+		} catch (Exception e) {
+			return createResponse(501, request);
+		}
+	}
+}

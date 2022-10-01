@@ -22,11 +22,17 @@ public class SnowflakeDataService extends JDBCoDataService {
 
     @Override
     protected Connection getConnection() throws SQLException, NamingException {
-
         // resource injection does not seem to work, so do the lookup ourselves
         InitialContext ctx = new InitialContext();
         DataSource ds = (DataSource)ctx.lookup("java:app/jdbc/snowflakeSource");
         return ds.getConnection();
+    }
+
+    @GET
+    @Path("/health_check")
+    @Produces({MediaType.TEXT_PLAIN})
+    public Response healthCheck() {
+        return super.healthCheck();
     }
 
     @Override
