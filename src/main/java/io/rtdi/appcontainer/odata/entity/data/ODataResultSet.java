@@ -68,8 +68,8 @@ public class ODataResultSet extends LinkedHashMap<String, Object> {
 	
 	private List<ODataRecord> value = new ArrayList<>();
 	
-	public ODataResultSet() {
-		this.put(ODataUtils.ODATACONTEXT, ODataUtils.METADATA + "#" + ODataIdentifier.ENTITYSETNAME);
+	public ODataResultSet(ODataIdentifier identifier) {
+		this.put(ODataUtils.ODATACONTEXT, ODataUtils.METADATA + "#" + identifier.getEntitySetName());
 		this.put(ODataUtils.VALUE, value);
 	}
 	

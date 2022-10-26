@@ -39,8 +39,8 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
     private static ODataSchema schema;
 
     @Operation(
-            summary = "oData service to get all oData services",
-            description = "Get the list of all oData services",
+            summary = "OData service to get all OData services",
+            description = "Get the list of all OData services",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -153,12 +153,12 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
     }
 
     @Operation(
-            summary = "oData $metadata",
+            summary = "OData $metadata",
             description = "The $metadata document describing the service",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "The oData $metadata document about this service",
+                            description = "The OData $metadata document about this service",
                             content = {
                                     @Content(
                                             schema = @Schema(implementation = Metadata.class)

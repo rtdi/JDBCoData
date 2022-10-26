@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
@@ -25,15 +27,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
 
 public abstract class JDBCoDataService extends JDBCoDataBase {
-	public static final String ROWID = "__ROWID";
 
 	@Operation(
-			summary = "oData list of EntitySets",
+			summary = "OData list of EntitySets",
 			description = "Get the list of all EntitySets of this service",
 			responses = {
 					@ApiResponse(
 	                    responseCode = "200",
-	                    description = "All oData EntitySets",
+	                    description = "All OData EntitySets",
 	                    content = {
 	                            @Content(
 	                                    schema = @Schema(implementation = EntitySets.class)
@@ -56,12 +57,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
  	    		)
-    		String schemaraw,
-   		 	@Parameter(
- 	    		description = "objectname",
- 	    		example = "USERS"
- 	    		)
-    		String nameraw,
+    		String schema_raw,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
    	 	    		example = "json"
@@ -69,9 +65,14 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String format
     		) {
 		try {
+			try (Connection conn = getConnection()) {
+				String schema = ODataUtils.decodeName(schema_raw);
 				EntitySets ret = new EntitySets();
-				ret.addTable("TABLE");
+				for (String tableName: getTableNames(conn, schema)) {
+					ret.addTable(tableName);
+				}
 				return createResponse(200, ret, format, request);
+			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
@@ -79,12 +80,12 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 	}
 	
 	@Operation(
-			summary = "oData $metadata",
+			summary = "OData $metadata",
 			description = "The $metadata document describing the service",
 			responses = {
 					@ApiResponse(
 	                    responseCode = "200",
-	                    description = "The oData $metadata document about this service",
+	                    description = "The OData $metadata document about this service",
 	                    content = {
 	                            @Content(
 	                                    schema = @Schema(implementation = Metadata.class)
@@ -107,12 +108,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
  	    		)
-    		String schemaraw,
-   		 	@Parameter(
- 	    		description = "objectname",
- 	    		example = "USERS"
- 	    		)
-    		String nameraw,
+    		String schema_raw,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
    	 	    		example = "json"
@@ -121,12 +117,13 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		) {
 		try {
 			try (Connection conn = getConnection();) {
-				String schema = ODataUtils.decodeName(schemaraw);
-				String name = ODataUtils.decodeName(nameraw);
-				ODataIdentifier identifier = createODataIdentifier(schema, name);
+				String schema = ODataUtils.decodeName(schema_raw);
 				Metadata ret = new Metadata();
-				ODataSchema table = getMetadata(conn, identifier);
-				ret.addObject(table);
+				for (String tableName: getTableNames(conn, schema)) {
+					ODataIdentifier identifier = createODataIdentifier(schema, tableName);
+					ODataSchema table = getMetadata(conn, identifier);
+					ret.addObject(table);
+				}
 				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
@@ -135,8 +132,22 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		}
 	}
 
+	private List<String> getTableNames(Connection conn, String schema) throws SQLException {
+		String sql = "select distinct table_name from information_schema.tables where table_schema = ?";
+		ArrayList<String> tableNames = new ArrayList<>();
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, schema);
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					tableNames.add((String) rs.getObject("TABLE_NAME"));
+				}
+			}
+			return tableNames;
+		}
+	}
+
 	@Operation(
-			summary = "oData EntitySet",
+			summary = "OData EntitySet",
 			description = "Read the data of a table",
 			responses = {
 					@ApiResponse(
@@ -164,24 +175,24 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
  	    		)
-    		String schemaraw,
+    		String schema_raw,
    		 	@Parameter(
  	    		description = "objectname",
  	    		example = "USERS"
  	    		)
-    		String nameraw,
+    		String name_raw,
    		 	@Parameter(
    	 	    		description = "The list of columns to return, the projection in more general terms",
    	 	    		example = "USERNAME, ACTIVE"
    	 	    		)
     		String select,
    		 	@Parameter(
-   	  	    		description = "An oData filter condition",
+   	  	    		description = "An OData filter condition",
    	  	    		example = ""
    	  	    		)
      		String filter,
    		 	@Parameter(
-   	    		description = "An oData order by clause",
+   	    		description = "An OData order by clause",
    	    		example = "USERNAME"
    	    		)
       		String order,
@@ -236,8 +247,8 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					resultsetlimit = 5000;
 				}
 			}
-			String schema = ODataUtils.decodeName(schemaraw);
-			String name = ODataUtils.decodeName(nameraw);
+			String schema = ODataUtils.decodeName(schema_raw);
+			String name = ODataUtils.decodeName(name_raw);
 			int hardlimit = this.getSQLResultSetLimit(schema, name, request);
 			if (resultsetlimit > hardlimit) {
 				resultsetlimit = hardlimit;
@@ -264,7 +275,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					resultsetid = request.getHeader("ContextId");
 				}
 				if (resultsetid == null) {
-					String signature = schemaraw + nameraw + select + filter + order; 
+					String signature = schema_raw + name_raw + select + filter + order;
 					resultsetid = String.valueOf(signature.hashCode());
 				}
 				if (skip == null || skip == 0) {
@@ -304,7 +315,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 	}
 
 	@Operation(
-			summary = "Select a single oData Entity",
+			summary = "Select a single OData Entity",
 			description = "Read one row of a table based on its key",
 			responses = {
 					@ApiResponse(
@@ -337,7 +348,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
  	    		description = "objectname",
  	    		example = "USERS"
  	    		)
-    		String nameraw,
+    		String name_raw,
    		 	@Parameter(
    	 	    		description = "A text with either a single value - in case the primary key consists of a single column only - or comma separated list of key=value components",
    	 	    		example = "PUBLIC"
@@ -357,7 +368,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		try {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
-				String name = ODataUtils.decodeName(nameraw);
+				String name = ODataUtils.decodeName(name_raw);
 				ODataIdentifier identifier = createODataIdentifier(schema, name);
 				ODataSchema table = getMetadata(conn, identifier);
 				ODataKeyClause where = new ODataKeyClause(keys, table);
@@ -366,7 +377,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 					where.setPreparedStatementParameters(stmt);
 					try (ResultSet rs = stmt.executeQuery(); ) {
-						ODataResultSet ret = new ODataResultSet();
+						ODataResultSet ret = new ODataResultSet(identifier);
 						String[] columnnames = new String[rs.getMetaData().getColumnCount()];
 						for (int i=0; i<rs.getMetaData().getColumnCount(); i++) {
 							columnnames[i] = ODataUtils.encodeName(rs.getMetaData().getColumnName(i+1));
@@ -389,7 +400,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 	}
 	
 	@Operation(
-			summary = "oData EntitySet",
+			summary = "OData EntitySet",
 			description = "Read the data of a table",
 			responses = {
 					@ApiResponse(
@@ -415,14 +426,14 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
  	    		)
-    		String schemaraw,
+    		String schema_raw,
    		 	@Parameter(
  	    		description = "objectname",
  	    		example = "USERS"
  	    		)
-    		String nameraw,
+    		String name_raw,
    		 	@Parameter(
-   	  	    		description = "An oData filter condition",
+   	  	    		description = "An OData filter condition",
    	  	    		example = ""
    	  	    		)
      		String filter,
@@ -434,8 +445,8 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		) {
 		try {
 			try (Connection conn = getConnection();) {
-				String schema = ODataUtils.decodeName(schemaraw);
-				String name = ODataUtils.decodeName(nameraw);
+				String schema = ODataUtils.decodeName(schema_raw);
+				String name = ODataUtils.decodeName(name_raw);
 				ODataIdentifier identifier = createODataIdentifier(schema, name);
 				ODataSchema table = getMetadata(conn, identifier);
 				ODataFilterClause where = new ODataFilterClause(filter, table);
@@ -456,13 +467,13 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		}
 	}
 
-	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
+	public static String createSQL(ODataIdentifier identifier, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
 		if (top == null) {
 			top = 5000;
 		}
 		StringBuilder sql = new StringBuilder("select ");
 		sql.append(projection);
-		sql.append(" from ").append(identifer.getIdentifier());
+		sql.append(" from ").append(identifier.getIdentifier());
 		if (where != null && where.length() != 0) {
 			sql.append(" where ");
 			sql.append(where);

@@ -37,46 +37,42 @@ public class SnowflakeDataService extends JDBCoDataService {
 
     @Override
     @GET
-    @Path("/tables/{schema}/{name}/")
+    @Path("/tables/{schema}")
     @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySets(
             @PathParam("schema")
-                    String schemaraw,
-            @PathParam("name")
-                    String nameraw,
+                    String schema_raw,
             @QueryParam("$format")
                     String format
     ) {
-        return super.getODataEntitySets(schemaraw, nameraw, format);
+        return super.getODataEntitySets(schema_raw, format);
     }
 
     @Override
     @GET
-    @Path("/tables/{schema}/{name}/$metadata")
+    @Path("/tables/{schema}/$metadata")
     @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
     public Response getODataMetadata(
             @PathParam("schema")
-                    String schemaraw,
-            @PathParam("name")
-                    String nameraw,
+                    String schema_raw,
             @QueryParam("$format")
                     String format
     ) {
-        return super.getODataMetadata(schemaraw, nameraw, format);
+        return super.getODataMetadata(schema_raw, format);
     }
 
     @Override
     @GET
-    @Path("/tables/{schema}/{name}/" + ODataIdentifier.ENTITYSETNAME)
+    @Path("/tables/{schema}/{name}")
     @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySet(
             @PathParam("schema")
-                    String schemaraw,
+                    String schema_raw,
             @PathParam("name")
-                    String nameraw,
+                    String name_raw,
             @QueryParam("$select")
                     String select,
             @QueryParam("$filter")
@@ -92,19 +88,19 @@ public class SnowflakeDataService extends JDBCoDataService {
             @QueryParam("$format")
                     String format
     ) {
-        return super.getODataEntitySet(schemaraw, nameraw, select, filter, order, top, skip, skiptoken, format);
+        return super.getODataEntitySet(schema_raw, name_raw, select, filter, order, top, skip, skiptoken, format);
     }
 
     @Override
     @GET
-    @Path("/tables/{schema}/{name}/" + ODataIdentifier.ENTITYSETNAME + "({keys})")
+    @Path("/tables/{schema}/{name}({keys})")
     @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntityRow(
             @PathParam("schema")
-                    String schemaraw,
+                    String schema_raw,
             @PathParam("name")
-                    String nameraw,
+                    String name_raw,
             @PathParam("keys")
                     String keys,
             @QueryParam("$select")
@@ -112,23 +108,23 @@ public class SnowflakeDataService extends JDBCoDataService {
             @QueryParam("$format")
                     String format
     ) {
-        return super.getODataEntityRow(schemaraw, nameraw, keys, select, format);
+        return super.getODataEntityRow(schema_raw, name_raw, keys, select, format);
     }
 
     @Override
     @GET
-    @Path("/tables/{schema}/{name}/" + ODataIdentifier.ENTITYSETNAME + "/$count")
+    @Path("/tables/{schema}/{name}/$count")
     @RolesAllowed(Roles.odataRole)
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     public Response getODataEntitySetCount(
             @PathParam("schema")
-                    String schemaraw,
+                    String schema_raw,
             @PathParam("name")
-                    String nameraw,
+                    String name_raw,
             @QueryParam("$filter")
                     String filter,
             @QueryParam("$format")
                     String format) {
-        return super.getODataEntitySetCount(schemaraw, nameraw, filter, format);
+        return super.getODataEntitySetCount(schema_raw, name_raw, filter, format);
     }
 }

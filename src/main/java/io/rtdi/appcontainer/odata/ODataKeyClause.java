@@ -14,7 +14,7 @@ public class ODataKeyClause extends ODataSQLStatementPart {
 		} else if (table.getEntityType() == null) {
 			throw new ODataException("The table metadata has no details about the EntityType");
 		} else if (table.getEntityType().getPK() == null || table.getEntityType().getPK().size() == 0) {
-			throw new ODataException("The table has no PK defined, hence does not support key access oData API calls");
+			throw new ODataException("The table has no PK defined, hence does not support key access OData API calls");
 		}
 		List<PropertyRef> pk = table.getEntityType().getPK();
 		String[] keyparts = keys.split(",");

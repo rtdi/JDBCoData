@@ -13,5 +13,4 @@ public class ODataEntityMetadata extends LinkedHashMap<String, Object> {
 		this.put(ODataUtils.KIND, ODataKind.EntitySet.name());
 		this.put("url", url);
 	}
-	
 }

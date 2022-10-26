@@ -38,9 +38,9 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 	 * 
 	 * @param connection A JDBC connection with its own lifetime
 	 * @param identifier The schema/objectname
-	 * @param select The raw oData $select string
-	 * @param filter The raw oData $filter string
-	 * @param order The raw oData $order string
+	 * @param select The raw OData $select string
+	 * @param filter The raw OData $filter string
+	 * @param order The raw OData $order string
 	 * @param resultsetid An indicator for this this statement
 	 * @param limit the maxpagesize to this many records
 	 * @param resultsetrowlimit The absolute upper bound of row the query returns
