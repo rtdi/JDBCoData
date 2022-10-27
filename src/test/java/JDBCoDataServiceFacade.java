@@ -1,8 +1,3 @@
-
-
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import io.rtdi.appcontainer.odata.JDBCoDataService;
 import jakarta.servlet.ServletException;
 import jakarta.ws.rs.GET;
@@ -12,6 +7,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @Path("/odata")
 public class JDBCoDataServiceFacade extends JDBCoDataService {

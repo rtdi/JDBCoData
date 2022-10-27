@@ -1,20 +1,9 @@
 package io.rtdi.appcontainer.odata;
 
-import java.sql.Connection;
-import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
 import io.rtdi.appcontainer.odata.entity.data.ODataResultSet;
 import io.rtdi.appcontainer.odata.entity.metadata.EntitySets;
-import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
 import io.rtdi.appcontainer.odata.entity.metadata.Metadata;
 import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +13,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Enumeration;
 
 public abstract class JDBCoDataService extends JDBCoDataBase {
 
@@ -129,20 +125,6 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
-		}
-	}
-
-	private List<String> getTableNames(Connection conn, String schema) throws SQLException {
-		String sql = "select distinct table_name from information_schema.tables where table_schema = ?";
-		ArrayList<String> tableNames = new ArrayList<>();
-		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-			stmt.setString(1, schema);
-			try (ResultSet rs = stmt.executeQuery()) {
-				while (rs.next()) {
-					tableNames.add((String) rs.getObject("TABLE_NAME"));
-				}
-			}
-			return tableNames;
 		}
 	}
 
@@ -258,8 +240,8 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			if (skiptoken != null) {
 				// Case 1: The client asked for the next page using the skiptoken, the server must provide that
 				try {
-					String resultsetid = String.valueOf(AsyncResultSet.tokenToresultsetid(skiptoken));
-					query = getResultSetCache(request, resultsetid);
+					String resultsetid = String.valueOf(AsyncResultSet.tokenToResultsetid(skiptoken));
+					query = getCachedResultSet(resultsetid);
 					if (query == null) {
 						throw new ODataException("The nextLink/skiptoken is no longer valid");
 					} else {
@@ -284,7 +266,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					addToResultSetCache(resultsetid, query);
 				} else {
 					// Case 3: First call queried the first 100 rows, now the next 100 rows are requested
-					query = getResultSetCache(request, resultsetid);
+					query = getCachedResultSet(resultsetid);
 					if (query == null) {
 						// No such query is in the cache - no other option than to execute it again
 						query = new AsyncResultSetQuery(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
@@ -298,20 +280,6 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
 		}
-	}
-
-	/**
-	 * To protect the server from caching millions of rows, there must be a hard limit of rows it produces at the outmost.
-	 * The default is 5000 rows but it can be changed to any number larger than 100. It can even be dynamic based on the object 
-	 * data is read from or the typ of request - UI vs massdata consumers.
-	 * 
-	 * @param request The httpRequest to decide on e.g. the type of query 
-	 * @param name is the database object name
-	 * @param schema the database schema of the object
-	 * @return the number of rows a query will return at the outmost
-	 */
-	protected int getSQLResultSetLimit(String schema, String name, HttpServletRequest request) {
-		return 5000;
 	}
 
 	@Operation(
@@ -467,131 +435,6 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		}
 	}
 
-	public static String createSQL(ODataIdentifier identifier, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
-		if (top == null) {
-			top = 5000;
-		}
-		StringBuilder sql = new StringBuilder("select ");
-		sql.append(projection);
-		sql.append(" from ").append(identifier.getIdentifier());
-		if (where != null && where.length() != 0) {
-			sql.append(" where ");
-			sql.append(where);
-		}
-		if (orderby != null) {
-			sql.append(" order by ").append(orderby);
-		}
-		sql.append(" limit ").append(top);
-		if (skip != null) {
-			sql.append(" offset ").append(skip);
-		}
-		return sql.toString();
-	}
-
-	protected ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
-		ODataSchema table = null;
-		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
-			if (rs.next()) {
-				/*
-					1.TABLE_CAT String => table catalog (may be null) 
-					2.TABLE_SCHEM String => table schema (may be null) 
-					3.TABLE_NAME String => table name 
-					4.TABLE_TYPE String => table type. Typical types are "TABLE","VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY","LOCAL TEMPORARY", "ALIAS", "SYNONYM". 
-					5.REMARKS String => explanatory comment on the table (may be null) 
-					6.TYPE_CAT String => the types catalog (may be null) 
-					7.TYPE_SCHEM String => the types schema (may be null) 
-					8.TYPE_NAME String => type name (may be null) 
-					9.SELF_REFERENCING_COL_NAME String => name of the designated "identifier" column of a typed table (may be null) 
-					10.REF_GENERATION String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null) 
-				 */
-				String tabletype = rs.getString(4);
-				String comment = rs.getString(5);
-				switch (tabletype) {
-				case "TABLE":
-				case "VIEW":
-				case "ALIAS":
-				case "SYNONYM":
-				case "SYSTEM TABLE":
-					table = new ODataSchema(identifier, tabletype);
-					table.setComment(comment);
-					table.addAnnotation(ODataUtils.JDBCSCHEMANAME, identifier.getDBSchema());
-					table.addAnnotation(ODataUtils.JDBCOBJECTNAME, identifier.getDBObjectName());
-					break;
-				default:
-					throw new ODataException(String.format("The object \"%s\".\"%s\" is not a table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
-				}
-			} else {
-				throw new ODataException(String.format("The object \"%s\".\"%s\" was not found as table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
-			}
-		}
-		try (ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
-			while (rs.next()) {
-				/*
-					1.TABLE_CAT String => table catalog (may be null) 
-					2.TABLE_SCHEM String => table schema (may be null) 
-					3.TABLE_NAME String => table name 
-					4.COLUMN_NAME String => column name 
-					5.DATA_TYPE int => SQL type from java.sql.Types 
-					6.TYPE_NAME String => Data source dependent type name,for a UDT the type name is fully qualified 
-					7.COLUMN_SIZE int => column size. 
-					8.BUFFER_LENGTH is not used. 
-					9.DECIMAL_DIGITS int => the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable. 
-					10.NUM_PREC_RADIX int => Radix (typically either 10 or 2) 
-					11.NULLABLE int => is NULL allowed.
-						- columnNoNulls - might not allow NULL values 
-						- columnNullable - definitely allows NULL values 
-						- columnNullableUnknown - nullability unknown 
-					
-					12.REMARKS String => comment describing column (may be null) 
-					13.COLUMN_DEF String => default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null) 
-					14.SQL_DATA_TYPE int => unused 
-					15.SQL_DATETIME_SUB int => unused 
-					16.CHAR_OCTET_LENGTH int => for char types the maximum number of bytes in the column 
-					17.ORDINAL_POSITION int => index of column in table(starting at 1) 
-					18.IS_NULLABLE String => ISO rules are used to determine the nullability for a column.
-						- YES --- if the column can include NULLs 
-						- NO --- if the column cannot include NULLs 
-						- empty string --- if the nullability for the column is unknown 
-					
-					19.SCOPE_CATALOG String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF) 
-					20.SCOPE_SCHEMA String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF) 
-					21.SCOPE_TABLE String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF) 
-					22.SOURCE_DATA_TYPE short => source type of a distinct type or user-generatedRef type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF) 
-					23.IS_AUTOINCREMENT String => Indicates whether this column is auto incremented
-						- YES --- if the column is auto incremented 
-						- NO --- if the column is not auto incremented 
-						- empty string --- if it cannot be determined whether the column is auto incremented 
-					24.IS_GENERATEDCOLUMN String => Indicates whether this is a generated column
-						- YES --- if this a generated column 
-						- NO --- if this not a generated column 
-						- empty string --- if it cannot be determined whether this is a generated column 
-				 */
-				EntityTypeProperty col = table.getEntityType().addColumn(ODataUtils.encodeName(rs.getString(4)), JDBCType.valueOf(rs.getInt(5)), rs.getString(6), rs.getInt(7), rs.getInt(9));
-				String nullable = rs.getString(18);
-				if ("NO".equals(nullable)) {
-					col.setNullable(Boolean.FALSE);
-				} else if ("YES".equals(nullable)) {
-					col.setNullable(Boolean.TRUE);
-				}
-				col.setComment(rs.getString(12));
-			}			
-		}
-		try (ResultSet rs = conn.getMetaData().getPrimaryKeys(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName()); ) {
-			/*
-				1.TABLE_CAT String => table catalog (may be null) 
-				2.TABLE_SCHEM String => table schema (may be null) 
-				3.TABLE_NAME String => table name 
-				4.COLUMN_NAME String => column name 
-				5.KEY_SEQ short => sequence number within primary key( a value of 1 represents the first column of the primary key, a value of 2 wouldrepresent the second column within the primary key). 
-				6.PK_NAME String => primary key name (may be null) 
-			 */
-			while (rs.next()) {
-				table.getEntityType().addKey(ODataUtils.encodeName(rs.getString(4)));
-			}
-		}
-		return table;
-	}
-
 	protected Response healthCheck() {
 		try (Connection conn = getConnection()) {
 			String sql = "select 1";
@@ -601,5 +444,31 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		} catch (Exception e) {
 			return createResponse(501, request);
 		}
+	}
+
+	protected static Response createResponse(int httpStatus, HttpServletRequest request) {
+		Response.ResponseBuilder r = Response.status(httpStatus).header("OData-Version", ODataUtils.VERSIONVALUE);
+		r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+		return r.build();
+	}
+
+	protected static Response createResponse(int httpStatus, Object entity, String format, HttpServletRequest request) {
+		Response.ResponseBuilder r = Response.status(httpStatus).entity(entity).header("OData-Version", ODataUtils.VERSIONVALUE);
+		if (format != null) {
+			/*
+			 * If a valid format parameter has been passed, it takes precedence.
+			 */
+			if (format.equals("json")) {
+				r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+			} else if (format.equals("xml")) {
+				r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
+			}
+		} else if (request.getHeader(HttpHeaders.ACCEPT) == null) {
+			/*
+			 * Default format is XML if neither a $format nor an accept header has been sent
+			 */
+			r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
+		}
+		return r.build();
 	}
 }

@@ -1,7 +1,6 @@
 package nl.inergy.odata.snowflake;
 
 import io.rtdi.appcontainer.odata.JDBCoDataService;
-import io.rtdi.appcontainer.odata.ODataIdentifier;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

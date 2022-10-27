@@ -153,7 +153,7 @@ public abstract class AsyncResultSet {
 		return readcompleted;
 	}
 
-	public static String tokenToresultsetid(String token) {
+	public static String tokenToResultsetid(String token) {
 		return token.substring(0, token.length()-6);
 	}
 

@@ -1,9 +1,9 @@
 package io.rtdi.appcontainer.odata;
 
 public class ODataIdentifier {
-//	public static final String ENTITYTYPE = "ROW";
-//	public static final String ENTITYSETNAME = "RS";
-//	public static final String ENTITYNAME = "DBOBJECT";
+
+	public final static String ENTITYTYPE="ROW";
+
 	private String dbschema;
 	private String dbobjectname;
 	private String entitysetname;
