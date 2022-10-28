@@ -28,5 +28,4 @@ public class ODataBase {
 			return annotations.values();
 		}
 	}
-
 }

@@ -12,9 +12,9 @@ public class EntityContainerReference {
 	private String entitytype;
 	private String name;
 
-	public EntityContainerReference(ODataIdentifier identifer, String tabletype) {
-		this.entitytype = identifer.getEntityName() + "." + identifer.getEntityType();
-		this.name = identifer.getEntitySetName();
+	public EntityContainerReference(ODataIdentifier identifier, String tabletype) {
+		this.entitytype = identifier.getNamespace() + "." + identifier.getEntityType();
+		this.name = identifier.getEntitySetName();
 	}
 
 	@XmlAttribute(name = "Name")

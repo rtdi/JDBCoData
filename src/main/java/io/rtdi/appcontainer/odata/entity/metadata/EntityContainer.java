@@ -43,5 +43,4 @@ public class EntityContainer {
 		data.put(table.getName(), table);
 		return data;
 	}
-	
 }

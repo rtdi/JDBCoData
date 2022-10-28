@@ -12,7 +12,6 @@ public class MapAdapter extends XmlAdapter<MapElements[], Map<String, Object>> {
 		int i = 0;
 		for (Map.Entry<String, Object> entry : arg0.entrySet())
 			mapElements[i++] = new MapElements(entry.getKey(), entry.getValue());
-
 		return mapElements;
 	}
 
@@ -23,5 +22,4 @@ public class MapAdapter extends XmlAdapter<MapElements[], Map<String, Object>> {
 		}
 		return r;
 	}
-
 }

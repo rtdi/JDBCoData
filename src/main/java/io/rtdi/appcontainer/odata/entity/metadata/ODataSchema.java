@@ -18,10 +18,10 @@ public class ODataSchema extends ODataBase {
 	
 	public ODataSchema() {};
 
-	public ODataSchema(ODataIdentifier identifer, String tabletype) {
-		container = new EntityContainer(identifer, tabletype);
-		this.identifier = identifer;
-		entitytype = new EntityType(identifer);
+	public ODataSchema(ODataIdentifier identifier, String tabletype) {
+		container = new EntityContainer(identifier, tabletype);
+		this.identifier = identifier;
+		entitytype = new EntityType(identifier);
 	}
 
 	@XmlElement(name = "EntityType")
@@ -39,7 +39,7 @@ public class ODataSchema extends ODataBase {
 	@XmlAttribute(name="Namespace")
 	@JsonIgnore
 	public String getNamespace() {
-		return identifier.getEntityName();
+		return identifier.getNamespace();
 	}
 
 	@JsonAnyGetter
@@ -57,5 +57,4 @@ public class ODataSchema extends ODataBase {
 	public void setContainer(EntityContainer container) {
 		this.container = container;
 	}
-	
 }
