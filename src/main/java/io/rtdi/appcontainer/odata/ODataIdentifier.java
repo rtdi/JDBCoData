@@ -2,7 +2,7 @@ package io.rtdi.appcontainer.odata;
 
 public class ODataIdentifier {
 
-	public final static String ENTITYTYPE="ROW";
+//	public final static String ENTITYTYPE="ROW";
 
 	private String namespace;
 	private String dbschema;
@@ -24,7 +24,7 @@ public class ODataIdentifier {
 	}
 
 	public ODataIdentifier(String dbschema, String dbobjectname) {
-		this(dbschema, dbobjectname, dbobjectname, dbobjectname, ENTITYTYPE);
+		this(dbschema, dbobjectname, dbobjectname, dbobjectname, createEntityType(dbschema, dbobjectname));
 	}
 
 	public String getNamespace() {
@@ -69,6 +69,10 @@ public class ODataIdentifier {
 		} else {
 			return false;
 		}
+	}
+
+	public static String createEntityType(String dbschema, String dbobjectname) {
+		return dbschema + "_" + dbobjectname;
 	}
 
 	public static String createNamespace(String dbschema, String dbobjectname) {

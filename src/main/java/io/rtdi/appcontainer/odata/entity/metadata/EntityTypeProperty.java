@@ -1,6 +1,7 @@
 package io.rtdi.appcontainer.odata.entity.metadata;
 
 import java.sql.JDBCType;
+import java.util.Locale;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,14 +17,16 @@ public class EntityTypeProperty extends ODataBase {
 	private Boolean nullable;
 	private Integer precision;
 	private Integer scale;
-	
+
+	public final static Integer SALESFORCE_STRING_MAX_LENGTH = 255;
+
 	public EntityTypeProperty() {};
 
 	public EntityTypeProperty(String name, JDBCType type, String typename, Integer length, Integer scale) {
 		this.name = name;
 		addAnnotation(ODataUtils.SOURCEDATATYPE, typename);
-		ODataTypes odatatype = ODataTypes.STRING;
-		Integer maxlength = null; 
+		ODataTypes odatatype;
+		Integer maxlength = null;
 		if (typename != null && typename.equals("GEOGRAPHY")) {
 			/*
 			 * Snowflake supports a GEOMETRY data type with the JDBCType VARCHAR
@@ -45,18 +48,6 @@ public class EntityTypeProperty extends ODataBase {
 			case BIT:
 			case BOOLEAN:
 				odatatype = ODataTypes.BOOLEAN;
-				break;
-			case CHAR:
-			case NVARCHAR:
-			case VARCHAR:
-				maxlength = length;
-			case CLOB:
-			case LONGNVARCHAR:
-			case LONGVARCHAR:
-			case NCHAR:
-			case NCLOB:
-			case SQLXML:
-				odatatype = ODataTypes.STRING;
 				break;
 			case DATE:
 				odatatype = ODataTypes.DATE;
@@ -94,7 +85,26 @@ public class EntityTypeProperty extends ODataBase {
 			case TINYINT:
 				odatatype = ODataTypes.SBYTE;
 				break;
+			/*
+				default also handles:
+						case CHAR:
+						case NVARCHAR:
+						case VARCHAR:
+						case CLOB:
+						case LONGNVARCHAR:
+						case LONGVARCHAR:
+						case NCHAR:
+						case NCLOB:
+						case SQLXML:
+				so, it handles all unknowns and strings basically
+			 */
 			default:
+				odatatype = ODataTypes.STRING;
+				maxlength = length;
+				// Salesforce can not deal Long Text in external datasource connections, so we limit the maxLength here
+				if (System.getenv("SALESFORCE_TOGGLE") != null &&
+						System.getenv("SALESFORCE_TOGGLE").toLowerCase(Locale.ROOT).equals("true"))
+					maxlength = SALESFORCE_STRING_MAX_LENGTH;
 				break;
 			}
 		}

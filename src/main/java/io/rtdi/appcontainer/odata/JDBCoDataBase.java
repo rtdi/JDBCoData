@@ -237,7 +237,7 @@ public abstract class JDBCoDataBase {
 	}
 
 	protected List<String> getTableNames(Connection conn, String schema) throws SQLException {
-		String sql = "select distinct table_name from information_schema.tables where table_schema = ?";
+		String sql = "select distinct table_name from information_schema.tables where table_schema = ? order by table_name";
 		ArrayList<String> tableNames = new ArrayList<>();
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, schema);
