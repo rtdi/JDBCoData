@@ -32,7 +32,7 @@ jobs:
       command: 'login'
   - task: CmdLine@2
     inputs:
-      script: './build.sh'
+      script: 'mvn install'
   # Build Docker image
   - task: Docker@2
     displayName: 'Build image'
