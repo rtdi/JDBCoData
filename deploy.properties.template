@@ -1,0 +1,9 @@
+export ODATA_SNOWFLAKE_ACCOUNT=${snowflake-account-name}
+export ODATA_SNOWFLAKE_DB=${snowflake-dwh-database}
+export ODATA_SNOWFLAKE_USER=${snowflake-etl-salesforce-username}
+export ODATA_SNOWFLAKE_PASSWORD=${snowflake-etl-salesforce-password}
+export ODATA_SNOWFLAKE_WAREHOUSE=${snowflake-etl-salesforce-warehouse}
+export ODATA_SNOWFLAKE_SCHEMA=DA_SFC_ARCHIVE
+
+export ODATA_CLIENT_USER=${snowflake-odata-service-user}
+export ODATA_CLIENT_PASSWORD=${snowflake-odata-service-password}
