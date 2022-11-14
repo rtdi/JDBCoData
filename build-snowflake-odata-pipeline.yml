@@ -30,7 +30,9 @@ jobs:
     inputs:
       containerRegistry: 'launchpad'
       command: 'login'
-
+  - task: CmdLine@2
+    inputs:
+      script: './build.sh'
   # Build Docker image
   - task: Docker@2
     displayName: 'Build image'
