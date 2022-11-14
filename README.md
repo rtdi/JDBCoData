@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # OData Snowflake Service based on Payara Docker deployment
 
 This fork extends the base code with:
