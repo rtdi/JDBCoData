@@ -5,8 +5,11 @@
                           res-type="javax.sql.DataSource"
                           datasource-classname="net.snowflake.client.jdbc.SnowflakeBasicDataSource"
                           pool-resize-quantity="2"
-                          max-pool-size="16"
-                          steady-pool-size="8">
+                          max-pool-size="128"
+                          steady-pool-size="32"
+                          max-wait-time-in-millis="60000"
+                          idle-timeout-in-seconds="300"
+    >
         <property name="URL" value="jdbc:snowflake://https://${ENV=ODATA_SNOWFLAKE_ACCOUNT}.snowflakecomputing.com?db=${ENV=ODATA_SNOWFLAKE_DB}"/>
         <property name="User" value="${ENV=ODATA_SNOWFLAKE_USER}"/>
         <property name="Password" value="${ENV=ODATA_SNOWFLAKE_PASSWORD}"/>
