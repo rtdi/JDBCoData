@@ -5,6 +5,4 @@ import io.rtdi.appcontainer.odata.ODataException;
 public interface IExpression {
 
 	CharSequence getSQL() throws ODataException;
-
-
 }

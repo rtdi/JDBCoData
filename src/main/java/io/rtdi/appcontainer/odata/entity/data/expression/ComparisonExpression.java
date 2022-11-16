@@ -85,5 +85,4 @@ public class ComparisonExpression extends Expression implements IBooleanExpressi
 		}
 		return "?";
 	}
-
 }

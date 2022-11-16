@@ -87,5 +87,4 @@ public abstract class ExpressionSet extends Expression {
 			return new FieldName(stack, word.toString(), table, params);
 		}
 	}
-
 }
