@@ -32,5 +32,4 @@ public class NotExpression extends ExpressionSet implements IBooleanExpression {
 	public CharSequence getSQL() throws ODataException {
 		return "not " + right.getSQL();
 	}
-
 }

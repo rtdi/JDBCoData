@@ -16,7 +16,7 @@ public class Group extends ExpressionSet implements IBooleanExpression {
 
 	@Override
 	protected void parse(CharBuffer in) throws ODataException {
-		while (in.hasRemaining() && in.charAt(in.position()) != ')') {
+		while (in.hasRemaining() && in.get(in.position()) != ')') {
 			super.parse(in);
 		}
 		group = (IBooleanExpression) stack.pop();
@@ -31,5 +31,4 @@ public class Group extends ExpressionSet implements IBooleanExpression {
 	public CharSequence getSQL() throws ODataException {
 		return "(" + group.getSQL() + ") ";
 	}
-
 }

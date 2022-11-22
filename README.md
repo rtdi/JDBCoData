@@ -1,9 +1,10 @@
-<<<<<<< HEAD
 # OData Snowflake Service based on Payara Docker deployment
 
 This fork extends the base code with:
 - deployment in Docker image with Payara server
 - configured basic authentication (secrets are based on environment variables)
+- lifted the level of entities to the database schema level
+
 
 
 # oData v4 for JDBC

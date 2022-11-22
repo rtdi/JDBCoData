@@ -34,5 +34,4 @@ public class Filter extends ExpressionSet implements IBooleanExpression {
 	public CharSequence getSQL() throws ODataException {
 		return expression.getSQL();
 	}
-
 }

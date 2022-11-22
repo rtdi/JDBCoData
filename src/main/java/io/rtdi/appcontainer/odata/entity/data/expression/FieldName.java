@@ -35,5 +35,4 @@ public class FieldName extends Expression {
 	public EntityTypeProperty getDataType() {
 		return table.getEntityType().getPropertyMetadata(name);
 	}
-
 }
