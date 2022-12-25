@@ -22,8 +22,8 @@
 	</developers>
 	<licenses>
 		<license>
-			<name>Commerical License - please contact rtdi.io</name>
-			<url>http://www.rtdi.io</url>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
 	<distributionManagement>
@@ -36,7 +36,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit.jupiter.version>5.8.1</junit.jupiter.version>
-		<log4j.version>2.17.0</log4j.version>
+		<log4j.version>2.19.0</log4j.version>
 	</properties>
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -52,7 +52,7 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.8</version>
+				<version>1.6.13</version>
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
