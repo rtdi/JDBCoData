@@ -10,7 +10,7 @@ import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 public class NotExpression extends ExpressionSet implements IBooleanExpression {
 	private IBooleanExpression right;
 
-	public NotExpression(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+	public NotExpression(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 

@@ -9,7 +9,7 @@ import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
 public class NullConstant extends Expression {
 
-	public NullConstant(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+	public NullConstant(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 

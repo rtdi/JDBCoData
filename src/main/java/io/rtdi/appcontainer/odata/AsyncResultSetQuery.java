@@ -60,7 +60,7 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 		// read all data ignoring skip/top
 		String sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), orderby.getSQL(), null, resultsetrowlimit, table);
 		reader = new ReaderThread(sql);
-		reader.addParams(where.getParams());
+		reader.addParams(where.getParamValues());
 		runner = new Thread(reader, "AsyncSQLReader_" + this.hashCode());
 		runner.start();
 	}
@@ -82,17 +82,17 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 		
 		private String sql;
 		private Exception error;
-		private List<Object> params;
+		private List<Object> paramValues;
 
 		private ReaderThread(String sql) {
 			this.sql = sql;
 		}
 
 		public void addParams(List<Object> params) {
-			if (this.params == null) {
-				this.params = params;
+			if (this.paramValues == null) {
+				this.paramValues = params;
 			} else {
-				this.params.addAll(params);
+				this.paramValues.addAll(params);
 			}
 		}
 
@@ -100,9 +100,9 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 		public void run() {
 			try {
 				try (PreparedStatement stmt = conn.prepareStatement(sql);) {
-					if (params != null) {
-						for (int i = 0; i < params.size(); i++) {
-							stmt.setObject(i+1, params.get(i));
+					if (paramValues != null) {
+						for (int i = 0; i < paramValues.size(); i++) {
+							stmt.setObject(i+1, paramValues.get(i));
 						}
 					}
 					try (ResultSet rs = stmt.executeQuery();) {

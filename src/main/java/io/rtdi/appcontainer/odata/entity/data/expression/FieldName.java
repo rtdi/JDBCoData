@@ -13,7 +13,7 @@ public class FieldName extends Expression {
 
 	private String name;
 
-	public FieldName(Stack<Expression> stack, String name, ODataSchema table, List<Object> params) {
+	public FieldName(Stack<Expression> stack, String name, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 		this.name = name;
 	}

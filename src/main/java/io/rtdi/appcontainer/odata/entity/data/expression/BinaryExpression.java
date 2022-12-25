@@ -13,7 +13,7 @@ public class BinaryExpression extends Expression {
 	private IBooleanExpression left;
 	private IBooleanExpression right;
 
-	public BinaryExpression(Stack<Expression> stack, String operation, ODataSchema table, List<Object> params) {
+	public BinaryExpression(Stack<Expression> stack, String operation, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 		this.operation = operation;
 		left = (IBooleanExpression) stack.pop();

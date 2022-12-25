@@ -13,7 +13,7 @@ public class ComparisonExpression extends Expression implements IBooleanExpressi
 	private Expression left;
 	private Expression right;
 
-	public ComparisonExpression(Stack<Expression> stack, String operation, ODataSchema table, List<Object> params) {
+	public ComparisonExpression(Stack<Expression> stack, String operation, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 		this.operation = operation;
 		left = stack.pop();

@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v3
 
       - name: Install Java and Maven
-        uses: actions/setup-java@main
+        uses: actions/setup-java@v3
         with:
-          java-version: 12
-          distribution: 'adopt'
+          java-version: 17
+          distribution: 'temurin'
 
       - name: Release Maven package
         uses: samuelmeuli/action-maven-publish@v1
