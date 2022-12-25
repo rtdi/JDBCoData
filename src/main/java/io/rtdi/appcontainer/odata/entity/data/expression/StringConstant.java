@@ -9,12 +9,12 @@ import io.rtdi.appcontainer.odata.ODataTypes;
 import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
 import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
-public class StringConstant extends Expression {
+public class StringConstant extends Expression implements IParameterValue {
 
 	private StringBuilder text;
 	private EntityTypeProperty datatype;
 
-	public StringConstant(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+	public StringConstant(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 		text = new StringBuilder();
 	}
@@ -32,7 +32,7 @@ public class StringConstant extends Expression {
 				case '\\':
 					escaped = true;
 				case '\'': {
-					addParam(text.toString());
+					addParam(this);
 					return;
 				}
 				default:
@@ -53,13 +53,17 @@ public class StringConstant extends Expression {
 		if (datatype == null) {
 			return "\'" + text + "\' ";
 		} else {
-			addParam(ODataTypes.convertToJDBC(text.toString(), datatype));
 			return "? ";
 		}
 	}
 
 	public void setDataType(EntityTypeProperty datatype) {
 		this.datatype = datatype;
+	}
+	
+	@Override
+	public Object getValue() throws ODataException {
+		return ODataTypes.convertToJDBC(text.toString(), datatype);
 	}
 
 }

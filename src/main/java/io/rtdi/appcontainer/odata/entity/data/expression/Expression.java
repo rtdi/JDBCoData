@@ -10,9 +10,9 @@ import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 public abstract class Expression implements IExpression {
 	protected Stack<Expression> stack;
 	protected ODataSchema table;
-	private List<Object> params;
+	private List<IParameterValue> params;
 
-	public Expression(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+	public Expression(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
 		this.stack = stack;
 		this.table = table;
 		this.params = params;
@@ -25,11 +25,12 @@ public abstract class Expression implements IExpression {
 		return e;
 	}
 
-	public List<Object> getParams() {
+	public List<IParameterValue> getParams() {
 		return params;
 	}
 	
-	public void addParam(Object o) {
+	public void addParam(IParameterValue o) {
 		params.add(o);
 	}
+	
 }

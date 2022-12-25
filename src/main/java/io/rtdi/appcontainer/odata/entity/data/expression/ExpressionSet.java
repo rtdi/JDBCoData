@@ -9,7 +9,7 @@ import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
 public abstract class ExpressionSet extends Expression {
 
-	public ExpressionSet(Stack<Expression> stack, ODataSchema table, List<Object> params) {
+	public ExpressionSet(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 
@@ -31,7 +31,7 @@ public abstract class ExpressionSet extends Expression {
 		}
 	}
 	
-	protected static Expression getNextExpression(CharBuffer in, Stack<Expression> stack, ODataSchema table, List<Object> params) throws ODataException {
+	protected static Expression getNextExpression(CharBuffer in, Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) throws ODataException {
 		StringBuilder lastword = new StringBuilder();
 		while (in.hasRemaining()) {
 			char c = in.get();
@@ -53,7 +53,12 @@ public abstract class ExpressionSet extends Expression {
 				in.position(in.position()-1); // rewind by 1 so that NumberConstant can read the first digit
 				return new NumberConstant(stack, c, table, params);
 			case '(':
-				return new Group(stack, table, params);
+				if (lastword != null && lastword.length() == 0) {
+					return new Group(stack, table, params);
+				} else {
+					// This is a function like "contains(...)"
+					return getFunction(lastword.toString(), stack, table, params);
+				}
 			case ' ': 
 				if (lastword.toString().trim().length() != 0) {
 					return parseWord(lastword, in, stack, table, params);
@@ -67,7 +72,15 @@ public abstract class ExpressionSet extends Expression {
 		return null;
 	}
 	
-	private static Expression parseWord(CharSequence word, CharBuffer in, Stack<Expression> stack, ODataSchema table, List<Object> params) throws ODataException {
+	private static Expression getFunction(String functionname, Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) throws ODataException {
+		switch (functionname) {
+		case "contains":
+			return new LikeExpression(stack, table, params);
+		}
+		throw new ODataException(String.format("The term %s is not a supported function", functionname));
+	}
+
+	private static Expression parseWord(CharSequence word, CharBuffer in, Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) throws ODataException {
 		switch (word.toString()) {
 		case "null":
 			return new NullConstant(stack, table, params);

@@ -18,14 +18,14 @@ public class ODataKeyClause extends ODataSQLStatementPart {
 		}
 		List<PropertyRef> pk = table.getEntityType().getPK();
 		String[] keyparts = keys.split(",");
-		params = new ArrayList<>();
+		paramValues = new ArrayList<>();
 		sql = new StringBuilder();
 		if (keyparts.length == 1) {
 			if (pk.size() == 1) {
 				String odatapk = pk.get(0).getName();
 				sql.append('"').append(ODataUtils.decodeName(odatapk)).append('"')
 					.append(" = ?");
-				params.add(ODataTypes.convertToJDBC(keyparts[0], table.getEntityType().getPropertyMetadata(odatapk)));
+				paramValues.add(ODataTypes.convertToJDBC(keyparts[0], table.getEntityType().getPropertyMetadata(odatapk)));
 			} else {
 				throw new ODataException(String.format("The query got a single key \"%s\" but the table has %d keys",
 						keys, pk.size()));
@@ -47,7 +47,7 @@ public class ODataKeyClause extends ODataSQLStatementPart {
 						}
 						sql.append('"').append(ODataUtils.decodeName(k)).append('"')
 							.append(" = ?");
-						params.add(ODataTypes.convertToJDBC(kv[1].trim(), table.getEntityType().getPropertyMetadata(k)));
+						paramValues.add(ODataTypes.convertToJDBC(kv[1].trim(), table.getEntityType().getPropertyMetadata(k)));
 					} else {
 						throw new ODataException(String.format("The condition column is \"%s\" but such column does not exist as key ",
 								kvstring));							

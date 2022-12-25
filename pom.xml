@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.rtdi.appcontainer</groupId>
 	<artifactId>JDBCoData</artifactId>
-	<version>0.1.4</version>
+	<version>0.1.6</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>An oData service for databases</description>
 	<packaging>jar</packaging>
@@ -45,8 +45,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<source>11</source>
-					<target>11</target>
+					<source>17</source>
+					<target>17</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -78,7 +78,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.3.2</version>
 				<configuration>
-					<source>11</source>
+					<source>17</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<excludePackageNames>io.rtdi.appcontainer.odata.entity.*</excludePackageNames>
 				</configuration>
@@ -123,18 +123,18 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-			<version>5.0.0</version>
+			<version>6.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-annotations</artifactId>
-			<version>2.1.11</version>
+			<version>2.2.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.13.2</version>
+			<version>2.14.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -157,23 +157,23 @@
 		<dependency>
 		    <groupId>jakarta.ws.rs</groupId>
 		    <artifactId>jakarta.ws.rs-api</artifactId>
-		    <version>3.0.0</version>
+		    <version>3.1.0</version>
 		    <scope>provided</scope>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.ben-manes.caffeine</groupId>
 		    <artifactId>caffeine</artifactId>
-		    <version>3.0.6</version>
+		    <version>3.1.2</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.fasterxml.jackson.dataformat</groupId>
 		    <artifactId>jackson-dataformat-xml</artifactId>
-		    <version>2.13.2</version>
+		    <version>2.14.1</version>
 		</dependency>
 		<dependency>
 		    <groupId>jakarta.xml.bind</groupId>
 		    <artifactId>jakarta.xml.bind-api</artifactId>
-		    <version>4.0.0-RC3</version>
+		    <version>4.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

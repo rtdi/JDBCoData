@@ -7,11 +7,11 @@ import java.util.Stack;
 import io.rtdi.appcontainer.odata.ODataException;
 import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
-public class NumberConstant extends Expression {
+public class NumberConstant extends Expression implements IParameterValue {
 
 	private StringBuilder text;
 
-	public NumberConstant(Stack<Expression> stack, char c, ODataSchema table, List<Object> params) {
+	public NumberConstant(Stack<Expression> stack, char c, ODataSchema table, List<IParameterValue> params) {
 		super(stack, table, params);
 		text = new StringBuilder(c);
 	}
@@ -35,17 +35,17 @@ public class NumberConstant extends Expression {
 				text.append(c);
 				break;
 			case ' ':
-				addParam(text.toString());
+				addParam(this);
 				return;
 			case ')':
 				in.position(in.position()-1);
-				addParam(text.toString());
+				addParam(this);
 				return;
 			default:
 				throw new ODataException("Not a valid number \"" + text.toString() + c + "...\"");
 			}
 		}
-		addParam(text.toString()); // in case this was the last char of the expression
+		addParam(this); // in case this was the last char of the expression
 	}
 
 	@Override
@@ -56,6 +56,11 @@ public class NumberConstant extends Expression {
 	@Override
 	public CharSequence getSQL() {
 		return "? ";
+	}
+
+	@Override
+	public Object getValue() throws ODataException {
+		return text.toString();
 	}
 
 }

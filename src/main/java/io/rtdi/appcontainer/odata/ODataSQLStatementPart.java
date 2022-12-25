@@ -6,10 +6,10 @@ import java.util.List;
 
 public class ODataSQLStatementPart {
 	protected StringBuilder sql;
-	protected List<Object> params;
+	protected List<Object> paramValues;
 	
-	public List<Object> getParams() {
-		return params;
+	public List<Object> getParamValues() {
+		return paramValues;
 	}
 
 	public StringBuilder getSQL() {
@@ -17,8 +17,8 @@ public class ODataSQLStatementPart {
 	}
 
 	public void setPreparedStatementParameters(PreparedStatement stmt) throws SQLException {
-		for (int i=0; i<params.size(); i++) {
-			stmt.setObject(i+1, params.get(i));
+		for (int i=0; i<paramValues.size(); i++) {
+			stmt.setObject(i+1, paramValues.get(i));
 		}
 	}
 
