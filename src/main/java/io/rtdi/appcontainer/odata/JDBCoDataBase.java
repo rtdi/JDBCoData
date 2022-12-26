@@ -1,12 +1,15 @@
 package io.rtdi.appcontainer.odata;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
 import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -48,7 +51,7 @@ public abstract class JDBCoDataBase {
 		return r.build();
 	}
 
-	public static AsyncResultSet getResultSetCache(HttpServletRequest request, String resultsetid) {
+	public static AsyncResultSet getCachedResultSet(HttpServletRequest request, String resultsetid) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			@SuppressWarnings("unchecked")
@@ -86,7 +89,109 @@ public abstract class JDBCoDataBase {
 		return table;
 	}
 
-	protected abstract ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException;
+	protected ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
+		ODataSchema table = null;
+		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
+			if (rs.next()) {
+				/*
+					1.TABLE_CAT String => table catalog (may be null) 
+					2.TABLE_SCHEM String => table schema (may be null) 
+					3.TABLE_NAME String => table name 
+					4.TABLE_TYPE String => table type. Typical types are "TABLE","VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY","LOCAL TEMPORARY", "ALIAS", "SYNONYM". 
+					5.REMARKS String => explanatory comment on the table (may be null) 
+					6.TYPE_CAT String => the types catalog (may be null) 
+					7.TYPE_SCHEM String => the types schema (may be null) 
+					8.TYPE_NAME String => type name (may be null) 
+					9.SELF_REFERENCING_COL_NAME String => name of the designated "identifier" column of a typed table (may be null) 
+					10.REF_GENERATION String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null) 
+				 */
+				String tabletype = rs.getString(4);
+				String comment = rs.getString(5);
+				switch (tabletype) {
+				case "TABLE":
+				case "VIEW":
+				case "ALIAS":
+				case "SYNONYM":
+				case "SYSTEM TABLE":
+					table = new ODataSchema(identifier, tabletype);
+					table.setComment(comment);
+					table.addAnnotation(ODataUtils.JDBCSCHEMANAME, identifier.getDBSchema());
+					table.addAnnotation(ODataUtils.JDBCOBJECTNAME, identifier.getDBObjectName());
+					break;
+				default:
+					throw new ODataException(String.format("The object \"%s\".\"%s\" is not a table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
+				}
+			} else {
+				throw new ODataException(String.format("The object \"%s\".\"%s\" was not found as table/view/synonym", identifier.getDBSchema(), identifier.getDBObjectName()));
+			}
+		}
+		try (ResultSet rs = conn.getMetaData().getColumns(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
+			while (rs.next()) {
+				/*
+					1.TABLE_CAT String => table catalog (may be null) 
+					2.TABLE_SCHEM String => table schema (may be null) 
+					3.TABLE_NAME String => table name 
+					4.COLUMN_NAME String => column name 
+					5.DATA_TYPE int => SQL type from java.sql.Types 
+					6.TYPE_NAME String => Data source dependent type name,for a UDT the type name is fully qualified 
+					7.COLUMN_SIZE int => column size. 
+					8.BUFFER_LENGTH is not used. 
+					9.DECIMAL_DIGITS int => the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable. 
+					10.NUM_PREC_RADIX int => Radix (typically either 10 or 2) 
+					11.NULLABLE int => is NULL allowed.
+						- columnNoNulls - might not allow NULL values 
+						- columnNullable - definitely allows NULL values 
+						- columnNullableUnknown - nullability unknown 
+					
+					12.REMARKS String => comment describing column (may be null) 
+					13.COLUMN_DEF String => default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null) 
+					14.SQL_DATA_TYPE int => unused 
+					15.SQL_DATETIME_SUB int => unused 
+					16.CHAR_OCTET_LENGTH int => for char types the maximum number of bytes in the column 
+					17.ORDINAL_POSITION int => index of column in table(starting at 1) 
+					18.IS_NULLABLE String => ISO rules are used to determine the nullability for a column.
+						- YES --- if the column can include NULLs 
+						- NO --- if the column cannot include NULLs 
+						- empty string --- if the nullability for the column is unknown 
+					
+					19.SCOPE_CATALOG String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF) 
+					20.SCOPE_SCHEMA String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF) 
+					21.SCOPE_TABLE String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF) 
+					22.SOURCE_DATA_TYPE short => source type of a distinct type or user-generatedRef type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF) 
+					23.IS_AUTOINCREMENT String => Indicates whether this column is auto incremented
+						- YES --- if the column is auto incremented 
+						- NO --- if the column is not auto incremented 
+						- empty string --- if it cannot be determined whether the column is auto incremented 
+					24.IS_GENERATEDCOLUMN String => Indicates whether this is a generated column
+						- YES --- if this a generated column 
+						- NO --- if this not a generated column 
+						- empty string --- if it cannot be determined whether this is a generated column 
+				 */
+				EntityTypeProperty col = table.getEntityType().addColumn(ODataUtils.encodeName(rs.getString(4)), JDBCType.valueOf(rs.getInt(5)), rs.getString(6), rs.getInt(7), rs.getInt(9));
+				String nullable = rs.getString(18);
+				if ("NO".equals(nullable)) {
+					col.setNullable(Boolean.FALSE);
+				} else if ("YES".equals(nullable)) {
+					col.setNullable(Boolean.TRUE);
+				}
+				col.setComment(rs.getString(12));
+			}			
+		}
+		try (ResultSet rs = conn.getMetaData().getPrimaryKeys(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName()); ) {
+			/*
+				1.TABLE_CAT String => table catalog (may be null) 
+				2.TABLE_SCHEM String => table schema (may be null) 
+				3.TABLE_NAME String => table name 
+				4.COLUMN_NAME String => column name 
+				5.KEY_SEQ short => sequence number within primary key( a value of 1 represents the first column of the primary key, a value of 2 wouldrepresent the second column within the primary key). 
+				6.PK_NAME String => primary key name (may be null) 
+			 */
+			while (rs.next()) {
+				table.getEntityType().addKey(ODataUtils.encodeName(rs.getString(4)));
+			}
+		}
+		return table;
+	}
 
 	/**
 	 * A table might get altered - frequently in the development system, less frequently in the production system. 
@@ -143,8 +248,33 @@ public abstract class JDBCoDataBase {
 		return new ODataIdentifier(schema, objectname);
 	}
 
+	protected ODataIdentifier createODataIdentifier(String schema, String objectname, String entityname) {
+		return new ODataIdentifier(schema, objectname, entityname);
+	}
+
 	public String getURL() {
 		return request.getRequestURI();
+	}
+
+	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
+		if (top == null) {
+			top = 5000;
+		}
+		StringBuilder sql = new StringBuilder("select ");
+		sql.append(projection);
+		sql.append(" from ").append(identifer.getIdentifier());
+		if (where != null && where.length() != 0) {
+			sql.append(" where ");
+			sql.append(where);
+		}
+		if (orderby != null) {
+			sql.append(" order by ").append(orderby);
+		}
+		sql.append(" limit ").append(top);
+		if (skip != null) {
+			sql.append(" offset ").append(skip);
+		}
+		return sql.toString();
 	}
 
 }

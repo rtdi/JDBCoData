@@ -1,13 +1,9 @@
 package io.rtdi.appcontainer.odata;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Enumeration;
 
 import io.rtdi.appcontainer.odata.entity.ODataError;
-import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
 import io.rtdi.appcontainer.odata.entity.data.ODataResultSet;
 import io.rtdi.appcontainer.odata.entity.metadata.EntitySets;
 import io.rtdi.appcontainer.odata.entity.metadata.Metadata;
@@ -18,16 +14,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
 
 /**
- * The class with all OData operations where the OData endpoint is exposing a single table/view.
+ * The variant where one OData endpoint exposes an entire database schema
  *
  */
-public abstract class JDBCoDataService extends JDBCoDataBase {
-	public static final String ROWID = "__ROWID";
+public abstract class JDBCoDataServiceForSchema extends JDBCoDataService {
 
 	@Operation(
 			summary = "OData list of EntitySets",
@@ -53,17 +46,12 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					)
             })
 	@Tag(name = "ReadDB")
-    public Response getODataEntitySets(
+    public Response getODataEntitySetsForSchema(
    		 	@Parameter(
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
  	    		)
     		String schemaraw,
-   		 	@Parameter(
- 	    		description = "objectname",
- 	    		example = "USERS"
- 	    		)
-    		String nameraw,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
    	 	    		example = "json"
@@ -71,9 +59,40 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
     		String format
     		) {
 		try {
+			try (Connection conn = getConnection();) {
+				String schema = ODataUtils.decodeName(schemaraw);
 				EntitySets ret = new EntitySets();
-				ret.addTable("TABLE");
+				try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), schema, null, null); ) {
+					while (rs.next()) {
+						/*
+						1.TABLE_CAT String => table catalog (may be null) 
+						2.TABLE_SCHEM String => table schema (may be null) 
+						3.TABLE_NAME String => table name 
+						4.TABLE_TYPE String => table type. Typical types are "TABLE","VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY","LOCAL TEMPORARY", "ALIAS", "SYNONYM". 
+						5.REMARKS String => explanatory comment on the table (may be null) 
+						6.TYPE_CAT String => the types catalog (may be null) 
+						7.TYPE_SCHEM String => the types schema (may be null) 
+						8.TYPE_NAME String => type name (may be null) 
+						9.SELF_REFERENCING_COL_NAME String => name of the designated "identifier" column of a typed table (may be null) 
+						10.REF_GENERATION String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null) 
+					    */
+						String tablename = rs.getString(3);
+						String tabletype = rs.getString(4);
+						switch (tabletype) {
+						case "TABLE":
+						case "VIEW":
+						// case "ALIAS":
+						// case "SYNONYM":
+						case "SYSTEM TABLE":
+							ret.addTable(ODataUtils.encodeName(tablename));
+							break;
+						default:
+							break;
+						}
+					}
+				}
 				return createResponse(200, ret, format, request);
+			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
@@ -104,17 +123,12 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					)
             })
 	@Tag(name = "ReadDB")
-    public Response getODataMetadata(
+    public Response getODataMetadataForSchema(
    		 	@Parameter(
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
  	    		)
     		String schemaraw,
-   		 	@Parameter(
- 	    		description = "objectname",
- 	    		example = "USERS"
- 	    		)
-    		String nameraw,
    		 	@Parameter(
    	 	    		description = "Optional parameter to overrule the format",
    	 	    		example = "json"
@@ -124,11 +138,39 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		try {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
-				String name = ODataUtils.decodeName(nameraw);
-				ODataIdentifier identifier = createODataIdentifier(schema, name, ODataIdentifier.ENTITYNAME);
 				Metadata ret = new Metadata();
-				ODataSchema table = getMetadata(conn, identifier);
-				ret.addObject(table);
+				try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), schema, null, null); ) {
+					while (rs.next()) {
+						/*
+						1.TABLE_CAT String => table catalog (may be null) 
+						2.TABLE_SCHEM String => table schema (may be null) 
+						3.TABLE_NAME String => table name 
+						4.TABLE_TYPE String => table type. Typical types are "TABLE","VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY","LOCAL TEMPORARY", "ALIAS", "SYNONYM". 
+						5.REMARKS String => explanatory comment on the table (may be null) 
+						6.TYPE_CAT String => the types catalog (may be null) 
+						7.TYPE_SCHEM String => the types schema (may be null) 
+						8.TYPE_NAME String => type name (may be null) 
+						9.SELF_REFERENCING_COL_NAME String => name of the designated "identifier" column of a typed table (may be null) 
+						10.REF_GENERATION String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null) 
+					    */
+						String tablename = rs.getString(3);
+						String tabletype = rs.getString(4);
+						switch (tabletype) {
+						case "TABLE":
+						case "VIEW":
+						// case "ALIAS":
+						// case "SYNONYM":
+						case "SYSTEM TABLE":
+							String name = ODataUtils.encodeName(tablename);
+							ODataIdentifier identifier = createODataIdentifier(schema, name);
+							ODataSchema table = getMetadata(conn, identifier);
+							ret.addObject(table);
+							break;
+						default:
+							break;
+						}
+					}
+				}
 				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
@@ -161,7 +203,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					)
             })
 	@Tag(name = "ReadDB")
-    public Response getODataEntitySet(
+    public Response getODataEntitySetForSchema(
    		 	@Parameter(
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
@@ -211,104 +253,12 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		try {
 			String schema = ODataUtils.decodeName(schemaraw);
 			String name = ODataUtils.decodeName(nameraw);
-			ODataIdentifier identifier = createODataIdentifier(schema, name, ODataIdentifier.ENTITYNAME);
+			ODataIdentifier identifier = createODataIdentifier(schema, name);
 			return getEntitySetImpl(schemaraw, nameraw, select, filter, order, top, skip, skiptoken, format, identifier);
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
 		}
-	}
-
-	protected Response getEntitySetImpl(String schemaraw, String nameraw, String select, String filter, String order, Integer top,
-			Integer skip, String skiptoken, String format, ODataIdentifier identifier)
-			throws ODataException, SQLException, ServletException {
-		Integer maxpagesize = 5000;
-		// Prefer: odata.track-changes,odata.maxpagesize=3
-		Enumeration<String> preferences = request.getHeaders("Prefer");
-		if (preferences != null) {
-			while (preferences.hasMoreElements()) {
-				String value = preferences.nextElement();
-				if (value.startsWith("odata.maxpagesize")) {
-					int p = value.indexOf('=');
-					if (p != -1) {
-						try {
-							maxpagesize = Integer.valueOf(value.substring(p+1));
-						} catch (NumberFormatException e) {
-							// to be ignored
-						}
-					}
-				}
-			}
-		}
-		int resultsetlimit = 5000;
-		if (request.getHeader("resultsetlimit") != null) {
-			try {
-				resultsetlimit = Integer.valueOf(request.getHeader("resultsetlimit"));
-				if (resultsetlimit < 1000) {
-					resultsetlimit = 1000;
-				}
-			} catch (NumberFormatException e) {
-				resultsetlimit = 5000;
-			}
-		}
-		int hardlimit = this.getSQLResultSetLimit(identifier.getDBSchema(), identifier.getDBObjectName(), request);
-		if (resultsetlimit > hardlimit) {
-			resultsetlimit = hardlimit;
-		}
-		AsyncResultSet query = null;
-		if (skiptoken != null) {
-			// Case 1: The client asked for the next page using the skiptoken, the server must provide that
-			try {
-				String resultsetid = String.valueOf(AsyncResultSet.tokenToResultsetId(skiptoken));
-				query = getCachedResultSet(request, resultsetid);
-				if (query == null) {
-					throw new ODataException("The nextLink/skiptoken is no longer valid");
-				} else {
-					ODataResultSet ret = query.fetchRecords(skip, top, AsyncResultSet.tokenToPageId(skiptoken));
-					return createResponse(200, ret, format, request);
-				}
-			} catch (NumberFormatException e) {
-				throw new ODataException("Invalid $skiptoken");
-			}
-		} else {
-			String resultsetid = request.getHeader("SAP-ContextId");
-			if (resultsetid == null) {
-				resultsetid = request.getHeader("ContextId");
-			}
-			if (resultsetid == null) {
-				String signature = schemaraw + nameraw + select + filter + order; 
-				resultsetid = String.valueOf(signature.hashCode());
-			}
-			if (skip == null || skip == 0) {
-			// Case 2: The client wants to have new data, so a new query must be executed
-				query = new AsyncResultSetQuery(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
-				addToResultSetCache(resultsetid, query);
-			} else {
-				// Case 3: First call queried the first 100 rows, now the next 100 rows are requested
-				query = getCachedResultSet(request, resultsetid);
-				if (query == null) {
-					// No such query is in the cache - no other option than to execute it again
-					query = new AsyncResultSetQuery(getConnection(), identifier, select, filter, order, resultsetid, maxpagesize, resultsetlimit, this);
-					addToResultSetCache(resultsetid, query);
-				}
-			}
-			ODataResultSet ret = query.fetchRecords(skip, top, null);
-			return createResponse(200, ret, format, request);
-		}
-	}
-
-	/**
-	 * To protect the server from caching millions of rows, there must be a hard limit of rows it produces at the outmost.
-	 * The default is 5000 rows but it can be changed to any number larger than 100. It can even be dynamic based on the object 
-	 * data is read from or the typ of request - UI vs massdata consumers.
-	 * 
-	 * @param request The httpRequest to decide on e.g. the type of query 
-	 * @param name is the database object name
-	 * @param schema the database schema of the object
-	 * @return the number of rows a query will return at the outmost
-	 */
-	protected int getSQLResultSetLimit(String schema, String name, HttpServletRequest request) {
-		return 5000;
 	}
 
 	@Operation(
@@ -335,7 +285,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					)
             })
 	@Tag(name = "ReadDB")
-    public Response getODataEntityRow(
+    public Response getODataEntityRowForSchema(
    		 	@Parameter(
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
@@ -366,7 +316,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
 				String name = ODataUtils.decodeName(nameraw);
-				ODataIdentifier identifier = createODataIdentifier(schema, name, ODataIdentifier.ENTITYNAME);
+				ODataIdentifier identifier = createODataIdentifier(schema, name);
 				return getODataEntityRowImpl(keys, select, format, conn, identifier);
 			}
 		} catch (Exception e) {
@@ -375,32 +325,6 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		}
 	}
 
-	protected Response getODataEntityRowImpl(String keys, String select, String format, Connection conn,
-			ODataIdentifier identifier) throws SQLException, ODataException {
-		ODataSchema table = getMetadata(conn, identifier);
-		ODataKeyClause where = new ODataKeyClause(keys, table);
-		ODataSelectClause projection = new ODataSelectClause(select, table);
-		String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, 1, table);
-		try (PreparedStatement stmt = conn.prepareStatement(sql);) {
-			where.setPreparedStatementParameters(stmt);
-			try (ResultSet rs = stmt.executeQuery(); ) {
-				ODataResultSet ret = new ODataResultSet();
-				String[] columnnames = new String[rs.getMetaData().getColumnCount()];
-				for (int i=0; i<rs.getMetaData().getColumnCount(); i++) {
-					columnnames[i] = ODataUtils.encodeName(rs.getMetaData().getColumnName(i+1));
-				}
-				while (rs.next()) {
-					ODataRecord row = new ODataRecord();
-					for (int i=0; i<columnnames.length; i++) {
-						row.put(columnnames[i], ODataTypes.convert(rs.getObject(i+1)));
-					}
-					ret.addRow(row);
-				}
-				return createResponse(200, ret, format, request);
-			}
-		}
-	}
-	
 	@Operation(
 			summary = "OData EntitySet",
 			description = "Read the data of a table",
@@ -423,7 +347,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					)
             })
 	@Tag(name = "ReadDB")
-    public Response getODataEntitySetCount(
+    public Response getODataEntitySetCountForSchema(
    		 	@Parameter(
  	    		description = "schemaname",
  	    		example = "INFORMATION_SCHEMA"
@@ -449,50 +373,13 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			try (Connection conn = getConnection();) {
 				String schema = ODataUtils.decodeName(schemaraw);
 				String name = ODataUtils.decodeName(nameraw);
-				ODataIdentifier identifier = createODataIdentifier(schema, name, ODataIdentifier.ENTITYNAME);
+				ODataIdentifier identifier = createODataIdentifier(schema, name);
 				return getODataEntitySetCountImpl(filter, format, conn, identifier);
 			}
 		} catch (Exception e) {
 			ODataError error = new ODataError(e);
 			return createResponse(error.getStatusCode(), error, format, request);
 		}
-	}
-
-	protected Response getODataEntitySetCountImpl(String filter, String format, Connection conn,
-			ODataIdentifier identifier) throws SQLException, ODataException {
-		ODataSchema table = getMetadata(conn, identifier);
-		ODataFilterClause where = new ODataFilterClause(filter, table);
-		String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, 1, table);
-		try (PreparedStatement stmt = conn.prepareStatement(sql);) {
-			try (ResultSet rs = stmt.executeQuery(); ) {
-				if (rs.next()) {
-					return createResponse(200, rs.getInt(1), format, request);
-				} else {
-					return createResponse(200, Integer.valueOf(0), format, request);
-				}
-			}
-		}
-	}
-
-	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
-		if (top == null) {
-			top = 5000;
-		}
-		StringBuilder sql = new StringBuilder("select ");
-		sql.append(projection);
-		sql.append(" from ").append(identifer.getIdentifier());
-		if (where != null && where.length() != 0) {
-			sql.append(" where ");
-			sql.append(where);
-		}
-		if (orderby != null) {
-			sql.append(" order by ").append(orderby);
-		}
-		sql.append(" limit ").append(top);
-		if (skip != null) {
-			sql.append(" offset ").append(skip);
-		}
-		return sql.toString();
 	}
 
 }

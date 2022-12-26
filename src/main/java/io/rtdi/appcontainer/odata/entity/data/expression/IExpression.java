@@ -6,5 +6,4 @@ public interface IExpression {
 
 	CharSequence getSQL() throws ODataException;
 
-
 }

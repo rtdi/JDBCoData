@@ -10,6 +10,7 @@ public class ODataIdentifier {
 	private String entityname;
 	private String entitytype;
 	private String identifier;
+	private String namespace;
 
 	public ODataIdentifier(String dbschema, String dbobjectname, String entityname, String entitysetname, String entitytype) {
 		super();
@@ -18,11 +19,16 @@ public class ODataIdentifier {
 		this.entitysetname = entitysetname;
 		this.entityname = entityname;
 		this.entitytype = entitytype;
-		this.identifier = createIdentifier(dbschema, dbobjectname);
+		this.identifier = createSqlIdentifier(dbschema, dbobjectname);
+		this.namespace = createNamespace(dbschema, dbobjectname);
 	}
 
 	public ODataIdentifier(String dbschema, String dbobjectname) {
-		this(dbschema, dbobjectname, ENTITYNAME, ENTITYSETNAME, ENTITYTPE);
+		this(dbschema, dbobjectname, createEntityType(dbschema, dbobjectname), ENTITYSETNAME, ENTITYTPE);
+	}
+	
+	public ODataIdentifier(String dbschema, String dbobjectname, String entityname) {
+		this(dbschema, dbobjectname, entityname, ENTITYSETNAME, ENTITYTPE);
 	}
 	
 	public String getDBSchema() {
@@ -48,6 +54,10 @@ public class ODataIdentifier {
 	public String getIdentifier() {
 		return identifier;
 	}
+	
+	public String getNamespace() {
+		return namespace;
+	}
 
 	@Override
 	public int hashCode() {
@@ -65,7 +75,16 @@ public class ODataIdentifier {
 		}
 	}
 	
-	public static String createIdentifier(String dbschema, String dbobjectname) {
+
+	public static String createEntityType(String dbschema, String dbobjectname) {
+		return dbschema + "_" + dbobjectname;
+	}
+
+	public static String createNamespace(String dbschema, String dbobjectname) {
+		return dbschema + "." + dbobjectname;
+	}
+	
+	public static String createSqlIdentifier(String dbschema, String dbobjectname) {
 		return '"' + dbschema + "\".\"" + dbobjectname + '"';
 	}
 }

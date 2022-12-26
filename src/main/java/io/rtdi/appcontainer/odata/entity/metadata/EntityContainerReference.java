@@ -13,7 +13,7 @@ public class EntityContainerReference {
 	private String name;
 
 	public EntityContainerReference(ODataIdentifier identifer, String tabletype) {
-		this.entitytype = identifer.getEntityName() + "." + identifer.getEntityType();
+		this.entitytype = identifer.getNamespace() + "." + identifer.getEntityType();
 		this.name = identifer.getEntitySetName();
 	}
 

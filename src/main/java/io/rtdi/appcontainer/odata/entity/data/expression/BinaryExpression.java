@@ -7,7 +7,7 @@ import java.util.Stack;
 import io.rtdi.appcontainer.odata.ODataException;
 import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 
-public class BinaryExpression extends Expression {
+public class BinaryExpression extends Expression implements IBooleanExpression {
 
 	private String operation;
 	private IBooleanExpression left;

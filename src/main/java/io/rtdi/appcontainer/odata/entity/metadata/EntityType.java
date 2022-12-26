@@ -25,8 +25,8 @@ public class EntityType extends ODataBase {
 	
 	public EntityType() {};
 	
-	public EntityType(ODataIdentifier identifer) {
-		this.name = identifer.getEntityType();
+	public EntityType(ODataIdentifier identifier) {
+		this.name = identifier.getEntityType();
 	}
 	
 	@XmlElementWrapper(name = "Key")

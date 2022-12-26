@@ -10,9 +10,9 @@ public class MapAdapter extends XmlAdapter<MapElements[], Map<String, Object>> {
 	public MapElements[] marshal(Map<String, Object> arg0) throws Exception {
 		MapElements[] mapElements = new MapElements[arg0.size()];
 		int i = 0;
-		for (Map.Entry<String, Object> entry : arg0.entrySet())
+		for (Map.Entry<String, Object> entry : arg0.entrySet()) {
 			mapElements[i++] = new MapElements(entry.getKey(), entry.getValue());
-
+		}
 		return mapElements;
 	}
 

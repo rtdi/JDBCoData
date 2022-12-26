@@ -151,11 +151,11 @@ public abstract class AsyncResultSet {
 		return readcompleted;
 	}
 
-	public static String tokenToresultsetid(String token) {
+	public static String tokenToResultsetId(String token) {
 		return token.substring(0, token.length()-6);
 	}
 
-	public static int tokenToPageid(String token) throws ODataException {
+	public static int tokenToPageId(String token) throws ODataException {
 		try {
 			return Integer.valueOf(token.substring(token.length()-6));
 		} catch (NumberFormatException e) {
