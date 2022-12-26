@@ -26,20 +26,22 @@ import jakarta.ws.rs.core.Response;
 @Path("/odata")
 public class JDBCoDataServiceFacade extends JDBCoDataServiceForSchema {
 	
-	private Connection connection;
+	private String jdbcdriver;
+	private String jdbcurl;
+	private String dbuser;
+	private String dbpasswd;
 
 	public JDBCoDataServiceFacade() throws SQLException, ClassNotFoundException {
-		String jdbcdriver = System.getenv("JDBCDRIVER");
-		String jdbcurl = System.getenv("JDBCURL");
-		String dbuser = System.getenv("JDBCUSERNAME");
-		String dbpasswd = System.getenv("JDBCPASSWD");
+		jdbcdriver = System.getenv("JDBCDRIVER");
+		jdbcurl = System.getenv("JDBCURL");
+		dbuser = System.getenv("JDBCUSERNAME");
+		dbpasswd = System.getenv("JDBCPASSWD");
 		Class.forName(jdbcdriver);
-        connection = DriverManager.getConnection(jdbcurl, dbuser, dbpasswd);                  
 	}
 
 	@Override
 	protected Connection getConnection() throws SQLException, ServletException {
-		return connection;
+        return DriverManager.getConnection(jdbcurl, dbuser, dbpasswd);                  
 	}
 
 	@Override

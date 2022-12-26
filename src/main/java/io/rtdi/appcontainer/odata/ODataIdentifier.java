@@ -20,15 +20,30 @@ public class ODataIdentifier {
 		this.entityname = entityname;
 		this.entitytype = entitytype;
 		this.identifier = createSqlIdentifier(dbschema, dbobjectname);
-		this.namespace = createNamespace(dbschema, dbobjectname);
 	}
 
+	/**
+	 * Create an identifier with the real db object names.
+	 * Used for the /odata/schemas/ endpoint.
+	 * 
+	 * @param dbschema
+	 * @param dbobjectname
+	 */
 	public ODataIdentifier(String dbschema, String dbobjectname) {
 		this(dbschema, dbobjectname, createEntityType(dbschema, dbobjectname), ENTITYSETNAME, ENTITYTPE);
+		this.namespace = createNamespace(dbschema, dbobjectname);
 	}
 	
+	/**
+	 * Create an identifier with a given entityname which is also used as namespace.
+	 * 
+	 * @param dbschema
+	 * @param dbobjectname
+	 * @param entityname
+	 */
 	public ODataIdentifier(String dbschema, String dbobjectname, String entityname) {
 		this(dbschema, dbobjectname, entityname, ENTITYSETNAME, ENTITYTPE);
+		this.namespace =  entityname;
 	}
 	
 	public String getDBSchema() {
