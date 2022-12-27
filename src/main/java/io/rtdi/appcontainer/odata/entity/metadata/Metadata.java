@@ -135,4 +135,9 @@ public class Metadata {
 		return schemamap;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("Metadata for %d schemas (=tables)", schemas.size());
+	}
+
 }

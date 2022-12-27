@@ -10,20 +10,28 @@ import io.rtdi.appcontainer.odata.ODataUtils;
 import jakarta.xml.bind.annotation.XmlAttribute;
 
 public class EntityTypeProperty extends ODataBase {
+	
+	public final static Integer SALESFORCE_STRING_MAX_LENGTH = 255;
+	
 	private String name;
 	private ODataTypes odatatype;
 	private Integer maxlength;
 	private Boolean nullable;
 	private Integer precision;
 	private Integer scale;
+	private boolean limitlength = false;
 	
-	public EntityTypeProperty() {};
+	public EntityTypeProperty() {
+		if (System.getenv("SALESFORCE_TOGGLE") != null &&
+				System.getenv("SALESFORCE_TOGGLE").toLowerCase().equals("true")) {
+			limitlength = true;
+		}
+	};
 
 	public EntityTypeProperty(String name, JDBCType type, String typename, Integer length, Integer scale) {
 		this.name = name;
 		addAnnotation(ODataUtils.SOURCEDATATYPE, typename);
-		ODataTypes odatatype = ODataTypes.STRING;
-		Integer maxlength = null; 
+		ODataTypes odatatype;
 		if (typename != null && typename.equals("GEOGRAPHY")) {
 			/*
 			 * Snowflake supports a GEOMETRY data type with the JDBCType VARCHAR
@@ -40,16 +48,12 @@ public class EntityTypeProperty extends ODataBase {
 			case LONGVARBINARY:
 			case VARBINARY:
 				odatatype = ODataTypes.BINARY;
-				maxlength = length;
+				maxlength = getMaxLength(length);
 				break;
 			case BIT:
 			case BOOLEAN:
 				odatatype = ODataTypes.BOOLEAN;
 				break;
-			case CHAR:
-			case NVARCHAR:
-			case VARCHAR:
-				maxlength = length;
 			case CLOB:
 			case LONGNVARCHAR:
 			case LONGVARCHAR:
@@ -57,7 +61,7 @@ public class EntityTypeProperty extends ODataBase {
 			case NCLOB:
 			case SQLXML:
 				odatatype = ODataTypes.STRING;
-				break;
+				maxlength = getMaxLength(null); // And unbound string, except for salesforce
 			case DATE:
 				odatatype = ODataTypes.DATE;
 				break;
@@ -95,12 +99,28 @@ public class EntityTypeProperty extends ODataBase {
 				odatatype = ODataTypes.SBYTE;
 				break;
 			default:
+				/*
+				 * VARCHAR
+				 * NVARCHAR
+				 * CHAR
+				 */
+				odatatype = ODataTypes.STRING;
+				maxlength = getMaxLength(length);
 				break;
 			}
 		}
 		this.odatatype = odatatype;
-		if (maxlength != null) {
-			this.maxlength = maxlength;
+	}
+	
+	private Integer getMaxLength(Integer length) {
+		if (limitlength) {
+			if (length == null || length > SALESFORCE_STRING_MAX_LENGTH) {
+				return SALESFORCE_STRING_MAX_LENGTH;
+			} else {
+				return length;
+			}
+		} else {
+			return length;
 		}
 	}
 
@@ -152,4 +172,10 @@ public class EntityTypeProperty extends ODataBase {
 	public ODataTypes getODataType() {
 		return odatatype;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("EntityTypeProperty %s of type %s", name, odatatype);
+	}
+
 }

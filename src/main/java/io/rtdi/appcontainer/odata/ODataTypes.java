@@ -152,7 +152,7 @@ public enum ODataTypes {
 	}
 
 	/**
-	 * @return the jdbc value as oData value
+	 * @return the jdbc value as OData value
 	 */
 	public String getText() {
 		return text;
@@ -162,7 +162,7 @@ public enum ODataTypes {
 	 * Convert the value retrieved via rs.getObject() into the correct OData object value
 	 * 
 	 * @param jdbcobject The value returned by rs.getObject()
-	 * @return A string oData expects as payload for this data type
+	 * @return A string OData expects as payload for this data type
 	 */
 	public static Object convert(Object jdbcobject) {
 		if (jdbcobject == null) {
@@ -194,9 +194,9 @@ public enum ODataTypes {
 	}
 
 	/**
-	 * Convert an oData parameter like 'key1' to the corresponding JDBC object so stmt.setObject() can be called with it.
+	 * Convert an OData parameter like 'key1' to the corresponding JDBC object so stmt.setObject() can be called with it.
 	 * 
-	 * @param odataparameter the value in the oData world
+	 * @param odataparameter the value in the OData world
 	 * @param columnmetadata table metadata to read the data types and the such
 	 * @return the same value in the JDBC world
 	 * @throws ODataException in case of a value conversion error
@@ -226,7 +226,7 @@ public enum ODataTypes {
 				case DOUBLE:
 					return Double.valueOf(odataparameter);
 				case DURATION:
-					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+					throw new ODataException("The OData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
 				case GUID:
 					return odataparameter;
 				case Geography:
@@ -245,20 +245,20 @@ public enum ODataTypes {
 				case GeometryMultiPolygon:
 				case GeometryPoint:
 				case GeometryPolygon:
-					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+					throw new ODataException("The OData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
 				case INT64:
 					return Long.valueOf(odataparameter);
 				case SINGLE:
 					return Float.valueOf(odataparameter);
 				case STREAM:
-					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+					throw new ODataException("The OData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
 				case STRING:
 					return odataparameter;
 				case TIMEOFDAY:
 					LocalTime l = LocalTime.parse(odataparameter);
 					return Time.valueOf(l);
 				default:
-					throw new ODataException("The oData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
+					throw new ODataException("The OData data type " + columnmetadata.getODataType().getText() + " is not supported as filter");
 				}
 			}
 		} catch (NumberFormatException e) {

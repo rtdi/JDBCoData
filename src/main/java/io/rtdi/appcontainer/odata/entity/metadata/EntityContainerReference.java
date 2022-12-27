@@ -13,7 +13,7 @@ public class EntityContainerReference {
 	private String name;
 
 	public EntityContainerReference(ODataIdentifier identifer, String tabletype) {
-		this.entitytype = identifer.getEntityName() + "." + identifer.getEntityType();
+		this.entitytype = identifer.getNamespace() + "." + identifer.getEntityType();
 		this.name = identifer.getEntitySetName();
 	}
 
@@ -32,6 +32,11 @@ public class EntityContainerReference {
 	@JsonProperty(ODataUtils.KIND)
 	public String getKind() {
 		return ODataKind.EntitySet.name();
+	}
+
+	@Override
+	public String toString() {
+		return String.format("EntityContainerReference %s", name);
 	}
 
 }

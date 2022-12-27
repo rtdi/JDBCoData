@@ -1,7 +1,5 @@
 package io.rtdi.appcontainer.odata.entity.metadata;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-
 import jakarta.xml.bind.annotation.XmlAttribute;
 
 public class PropertyRef {
@@ -15,7 +13,6 @@ public class PropertyRef {
 	}
 	
 	@XmlAttribute(name = "Name")
-	@JsonAnyGetter
 	public String getName() {
 		return name;
 	}
@@ -29,4 +26,10 @@ public class PropertyRef {
 	public int hashCode() {
 		return name.hashCode();
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("PropertyRef %s", name);
+	}
+
 }

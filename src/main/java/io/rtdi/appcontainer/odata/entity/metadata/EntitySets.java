@@ -20,4 +20,9 @@ public class EntitySets extends LinkedHashMap<String, Object> {
 		value.add(new ODataEntityMetadata(name, name));
 	}
 
+	@Override
+	public String toString() {
+		return String.format("EntitySets with %d entries", value.size());
+	}
+
 }
