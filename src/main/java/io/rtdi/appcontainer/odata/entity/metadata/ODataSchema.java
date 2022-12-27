@@ -58,4 +58,9 @@ public class ODataSchema extends ODataBase {
 		this.container = container;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("OData schema (=table) %s with container %s and EntityType", identifier, container, entitytype);
+	}
+
 }

@@ -104,7 +104,7 @@ public class EntityTypeProperty extends ODataBase {
 				 * NVARCHAR
 				 * CHAR
 				 */
-				odatatype = ODataTypes.BOOLEAN;
+				odatatype = ODataTypes.STRING;
 				maxlength = getMaxLength(length);
 				break;
 			}
@@ -172,4 +172,10 @@ public class EntityTypeProperty extends ODataBase {
 	public ODataTypes getODataType() {
 		return odatatype;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("EntityTypeProperty %s of type %s", name, odatatype);
+	}
+
 }

@@ -14,4 +14,9 @@ public class ODataEntityMetadata extends LinkedHashMap<String, Object> {
 		this.put("url", url);
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("EntityMetadata %s with URL %s", get("name"), get("url"));
+	}
+
 }

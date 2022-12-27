@@ -31,7 +31,7 @@ public class JDBCoDataServiceFacade extends JDBCoDataServiceForSchema {
 	private String dbuser;
 	private String dbpasswd;
 
-	public JDBCoDataServiceFacade() throws SQLException, ClassNotFoundException {
+	public JDBCoDataServiceFacade() throws ClassNotFoundException {
 		jdbcdriver = System.getenv("JDBCDRIVER");
 		jdbcurl = System.getenv("JDBCURL");
 		dbuser = System.getenv("JDBCUSERNAME");

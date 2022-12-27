@@ -28,7 +28,7 @@ class ServiceTestIT {
         tomcat.setPort(8080);
         tomcat.getConnector();
         Context context = tomcat.addWebapp("", basedir.toString());
-        Tomcat.addServlet(context, "jersey-container-servlet",
+        Tomcat.addServlet(context, "odata-servlet",
            new ServletContainer(new ResourceConfig(WebApplication.class)));
         
         tomcat.start();

@@ -17,6 +17,10 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 
+/**
+ * An OData EntityType is the database table column list
+ *
+ */
 public class EntityType extends ODataBase {
 	private List<PropertyRef> key;
 	private List<EntityTypeProperty> columns = new ArrayList<>();
@@ -77,4 +81,9 @@ public class EntityType extends ODataBase {
 		return ODataKind.EntityType.name();
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("EntityType %s with %d properties", name, index.size());
+	}
+
 }

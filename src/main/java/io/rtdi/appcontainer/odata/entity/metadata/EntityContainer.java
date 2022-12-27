@@ -44,4 +44,9 @@ public class EntityContainer {
 		return data;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("EntityContainer %s for table %s", ODataUtils.CONTAINER, table);
+	}
+
 }
