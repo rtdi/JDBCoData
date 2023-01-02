@@ -1,0 +1,57 @@
+{
+	"@odata.context": "$metadata#RS",
+	"value": [
+		{
+			"Year": "1968",
+			"Score": "  86",
+			"Title": " \"Greetings\""
+		},
+		{
+			"Year": "1970",
+			"Score": "  17",
+			"Title": " \"Bloody Mama\""
+		},
+		{
+			"Year": "1970",
+			"Score": "  73",
+			"Title": " \"Hi Mom!\""
+		},
+		{
+			"Year": "1971",
+			"Score": "  40",
+			"Title": " \"Born to Win\""
+		},
+		{
+			"Year": "1973",
+			"Score": "  98",
+			"Title": " \"Mean Streets\""
+		},
+		{
+			"Year": "1973",
+			"Score": "  88",
+			"Title": " \"Bang the Drum Slowly\""
+		},
+		{
+			"Year": "1974",
+			"Score": "  97",
+			"Title": " \"The Godfather Part II\""
+		},
+		{
+			"Year": "1976",
+			"Score": "  41",
+			"Title": " \"The Last Tycoon\""
+		},
+		{
+			"Year": "1976",
+			"Score": "  99",
+			"Title": " \"Taxi Driver\""
+		},
+		{
+			"Year": "1977",
+			"Score": "  47",
+			"Title": " \"1900\""
+		}
+	],
+	"@jdbc.sql": "select * from \"user\".\"deniro\" limit 5000",
+	"@odata.nextLink": "/api/odata/tables/user/deniro/RS?$skiptoken=103520820000001"
+}

@@ -5,9 +5,9 @@ import java.sql.ResultSet;
 
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataResultSet;
-import io.rtdi.appcontainer.odata.entity.metadata.EntitySets;
+import io.rtdi.appcontainer.odata.entity.definitions.EntitySets;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 import io.rtdi.appcontainer.odata.entity.metadata.Metadata;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -163,7 +163,7 @@ public abstract class JDBCoDataServiceForSchema extends JDBCoDataService {
 						case "SYSTEM TABLE":
 							String name = ODataUtils.encodeName(tablename);
 							ODataIdentifier identifier = createODataIdentifier(schema, name);
-							ODataSchema table = getMetadata(conn, identifier);
+							EntityType table = getMetadata(conn, identifier);
 							ret.addObject(table);
 							break;
 						default:

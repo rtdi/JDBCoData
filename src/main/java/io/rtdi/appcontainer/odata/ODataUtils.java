@@ -7,6 +7,9 @@ public class ODataUtils {
 	public static final String JDBC_COMMENT = "@jdbc.comment";
 	public static final String ODATACONTEXT = "@odata.context";
 	public static final String CONTAINER = "CONTAINER";
+	public static final String SCHEMA = "DBOBJECT";
+	public static final String ROW = "ROW";
+	public static final String ROWSET = "RS";
 	public static final String KIND = "$kind";
 	public static final String VERSION = "$Version";
 	public static final String METADATA = "$metadata";
@@ -22,6 +25,7 @@ public class ODataUtils {
 	public static final String NEXTLINK = "@odata.nextLink";
 	public static final String SOURCEDATATYPE = "@jdbc.datatype.source";
 	public static final String JDBCLENGTH = "@jdbc.length";
+	public static final String SQL = "@jdbc.sql";
 
 	public static String encodeName(String name) {
 		return name;

@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class Group extends ExpressionSet implements IBooleanExpression {
 	private IBooleanExpression group;
 
-	public Group(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
+	public Group(Stack<Expression> stack, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 

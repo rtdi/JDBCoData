@@ -1,8 +1,7 @@
 package io.rtdi.appcontainer.odata.entity.metadata;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -10,15 +9,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.rtdi.appcontainer.odata.ODataUtils;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
+import io.rtdi.appcontainer.odata.entity.definitions.ODataSchema;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+/**
+ * This is the root of the metadata document.
+ * It consists of a single schema (=data model)
+ *
+ */
 @XmlRootElement(name = "Edmx", namespace = "http://docs.oasis-open.org/odata/ns/edmx")
 public class Metadata {
 	private String version;
-	private List<ODataSchema> schemas;
+	private Map<String, ODataSchema> schemas;
 	/*
 	 	http://localhost:8080/AppContainer/protected/rest/odata/tables/INFORMATION_SCHEMA/DATABASES/$metadata
 
@@ -106,7 +112,8 @@ public class Metadata {
 	
 	public Metadata() {
 		this.version = "4.0";
-		this.schemas = new ArrayList<>();
+		this.schemas = new HashMap<>();
+		schemas.put(ODataUtils.SCHEMA, new ODataSchema(ODataUtils.SCHEMA));
 	}
 	
 	@XmlAttribute(name="Version")
@@ -115,24 +122,23 @@ public class Metadata {
 		return version;
 	}
 	
-	public void addObject(ODataSchema tableobject) {
-		schemas.add(tableobject);
+	public void addObject(EntityType tableobject) {
+		if (tableobject != null) {
+			ODataSchema schema = schemas.get(ODataUtils.SCHEMA);
+			schema.addEntityType(tableobject);
+		}
 	}
 	
 	@XmlElementWrapper(name="DataServices", namespace = "http://docs.oasis-open.org/odata/ns/edmx")
-	@XmlElement(name="Schema")
+	@XmlElement(name="Schema", namespace = "http://docs.oasis-open.org/odata/ns/edm")
 	@JsonIgnore
-	public List<ODataSchema> getSchemas() {
-		return schemas;
+	public Collection<ODataSchema> getSchemas() {
+		return schemas.values();
 	}
 	
 	@JsonAnyGetter
 	public Map<String, ODataSchema> getSchemasJson() {
-		Map<String, ODataSchema> schemamap = new HashMap<>();
-		for (ODataSchema schema : schemas) {
-			schemamap.put(schema.getNamespace(), schema);
-		}
-		return schemamap;
+		return schemas;
 	}
 	
 	@Override

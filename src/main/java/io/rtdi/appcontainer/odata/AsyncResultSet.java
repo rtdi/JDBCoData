@@ -8,7 +8,7 @@ import java.util.List;
 
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
 import io.rtdi.appcontainer.odata.entity.data.ODataResultSet;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 /**
  * This class holds all data needed for caching the states.
@@ -26,9 +26,10 @@ public abstract class AsyncResultSet {
 	protected String resultsetid;
 	protected String url;
 	protected List<ODataRecord> rows = Collections.synchronizedList(new ArrayList<>());
-	protected ODataSchema table;
+	protected EntityType table;
 	protected int limit;
 	protected boolean readcompleted = false;
+	protected String sql;
 
 	/**
 	 * Remember all states, create the SQL and execute it.
@@ -56,6 +57,10 @@ public abstract class AsyncResultSet {
 		this.table = service.getMetadata(conn, identifier);
 	}
 
+	public String getSQL() {
+		return sql;
+	}
+
 	/**
 	 * Provides the data in the ODataResultSet format for the requested segment
 	 * This supports server side and client side paging.
@@ -63,10 +68,11 @@ public abstract class AsyncResultSet {
 	 * @param skip Number of records to skip from the beginning
 	 * @param top Max number of rows to return
 	 * @param page the page number to return the data for, starting with 0
+	 * @param format 
 	 * @return the resultset object with up to limit-many rows
 	 * @throws SQLException thrown when there are JDBC errors
 	 */
-	public ODataResultSet fetchRecords(Integer skip, Integer top, Integer page) throws SQLException {
+	public ODataResultSet fetchRecords(Integer skip, Integer top, Integer page, String format) throws SQLException {
 		/*
 		 * The user requested the data to start at <pre>skip</pre> or position 0 if not provided.
 		 * But because the requested data was so much, server side pagination kicked in and a page is provided.
@@ -114,7 +120,7 @@ public abstract class AsyncResultSet {
 			/*
 			 * All data has been read from the database, so reset the stop limit in 
 			 */
-			if (stop > rows.size()) {
+			if (stop >= rows.size()) {
 				stop = rows.size();
 				hasmoredata = false;
 			}
@@ -125,7 +131,7 @@ public abstract class AsyncResultSet {
 			throw new SQLException("Fetch did not find the data in time");
 		}
 		// Yes, the data is available
-		ODataResultSet resultset = new ODataResultSet();
+		ODataResultSet resultset = new ODataResultSet(sql);
 		for (int i = start; i < stop; i++) {
 			resultset.addRow(rows.get(i));
 		}
@@ -137,7 +143,7 @@ public abstract class AsyncResultSet {
 				newpage = 1;
 			}
 			String nextlinktoken = generateToken(resultsetid, newpage);
-			resultset.setNextLink(url + "?$skiptoken=" + nextlinktoken);
+			resultset.setNextLink(url + "?$skiptoken=" + nextlinktoken + (format != null?"&$format=" + format : ""));
 		}
 		return resultset;
 	}

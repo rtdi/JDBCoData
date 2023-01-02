@@ -1,4 +1,4 @@
-package io.rtdi.appcontainer.odata.entity.metadata;
+package io.rtdi.appcontainer.odata.entity.definitions;
 
 import java.sql.JDBCType;
 

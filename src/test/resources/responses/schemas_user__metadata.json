@@ -1,0 +1,85 @@
+{
+	"$Version": "4.0",
+	"DBOBJECT": {
+		"Annotation": null,
+		"CONTAINER": {
+			"$kind": "EntityContainer",
+			"ROW": {
+				"$Type": "user.user.deniro.ROW",
+				"$kind": "EntitySet"
+			}
+		},
+		"ROW": {
+			"Annotation": [
+				{
+					"@jdbc.type": "TABLE"
+				},
+				{
+					"@jdbc.objectname": "user.deniro"
+				},
+				{
+					"@jdbc.schemaname": "user"
+				},
+				{
+					"@jdbc.comment": ""
+				}
+			],
+			"$Key": null,
+			"$kind": "EntityType",
+			"Score": {
+				"Annotation": [
+					{
+						"@jdbc.datatype.source": "String"
+					},
+					{
+						"@jdbc.comment": null
+					},
+					{
+						"@jdbc.datatype": "VARCHAR"
+					}
+				],
+				"$Nullable": true,
+				"$Precision": null,
+				"$Scale": null,
+				"$Type": "Edm.String",
+				"$MaxLength": 32767
+			},
+			"Year": {
+				"Annotation": [
+					{
+						"@jdbc.datatype.source": "String"
+					},
+					{
+						"@jdbc.comment": null
+					},
+					{
+						"@jdbc.datatype": "VARCHAR"
+					}
+				],
+				"$Nullable": true,
+				"$Precision": null,
+				"$Scale": null,
+				"$Type": "Edm.String",
+				"$MaxLength": 32767
+			},
+			"Title": {
+				"Annotation": [
+					{
+						"@jdbc.datatype.source": "String"
+					},
+					{
+						"@jdbc.comment": null
+					},
+					{
+						"@jdbc.datatype": "VARCHAR"
+					}
+				],
+				"$Nullable": true,
+				"$Precision": null,
+				"$Scale": null,
+				"$Type": "Edm.String",
+				"$MaxLength": 32767
+			}
+		}
+	}
+}

@@ -1,10 +1,10 @@
 package io.rtdi.appcontainer.odata;
 
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class ODataOrderByClause extends ODataSQLStatementPart {
 
-	public ODataOrderByClause(String keys, ODataSchema table) throws ODataException {
+	public ODataOrderByClause(String keys, EntityType table) throws ODataException {
 		if (keys != null) {
 			sql = new StringBuilder();
 			String[] parts = keys.split("[ ]*,[ ]*");

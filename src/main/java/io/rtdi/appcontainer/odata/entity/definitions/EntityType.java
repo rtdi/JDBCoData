@@ -1,4 +1,4 @@
-package io.rtdi.appcontainer.odata.entity.metadata;
+package io.rtdi.appcontainer.odata.entity.definitions;
 
 import java.sql.JDBCType;
 import java.util.ArrayList;
@@ -25,14 +25,21 @@ public class EntityType extends ODataBase {
 	private List<PropertyRef> key;
 	private List<EntityTypeProperty> columns = new ArrayList<>();
 	private Map<String, EntityTypeProperty> index = new HashMap<>();
-	private String name;
+	private String tabletype;
+	private ODataIdentifier identifier;
 	
 	public EntityType() {};
 	
 	public EntityType(ODataIdentifier identifier) {
-		this.name = identifier.getEntityType();
+		this.identifier = identifier;
 	}
 	
+	public EntityType(ODataIdentifier identifier, String tabletype) {
+		this(identifier);
+		this.tabletype = tabletype;
+		addAnnotation(ODataUtils.JDBCTYPE, tabletype);
+	}
+
 	@XmlElementWrapper(name = "Key")
 	@XmlElement(name="PropertyRef")
 	@JsonProperty(ODataUtils.KEY)
@@ -68,7 +75,7 @@ public class EntityType extends ODataBase {
 	@XmlAttribute(name = "Name")
 	@JsonIgnore
 	public String getName() {
-		return name;
+		return identifier.getEntityType();
 	}
 	
 	@JsonAnyGetter
@@ -83,7 +90,21 @@ public class EntityType extends ODataBase {
 	
 	@Override
 	public String toString() {
-		return String.format("EntityType %s with %d properties", name, index.size());
+		return String.format("EntityType %s with %d properties", identifier.getEntityType(), index.size());
+	}
+
+	@JsonIgnore
+	public String getTableType() {
+		return tabletype;
+	}
+
+	public void setTableType(String tabletype) {
+		this.tabletype = tabletype;
+	}
+	
+	@JsonIgnore
+	public ODataIdentifier getIdentifier() {
+		return identifier;
 	}
 
 }

@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class NullConstant extends Expression {
 
-	public NullConstant(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
+	public NullConstant(Stack<Expression> stack, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 

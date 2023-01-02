@@ -1,5 +1,6 @@
-package io.rtdi.appcontainer.odata.entity.metadata;
+package io.rtdi.appcontainer.odata.entity.definitions;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,29 +8,30 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.rtdi.appcontainer.odata.ODataIdentifier;
 import io.rtdi.appcontainer.odata.ODataKind;
 import io.rtdi.appcontainer.odata.ODataUtils;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 
 public class EntityContainer {
-	private EntityContainerReference table;
+	private Map<String, EntityContainerReference> tables;
+	private String containername;
 	
-	public EntityContainer(ODataIdentifier identifier, String tabletype) {
-		table = new EntityContainerReference(identifier, tabletype);
+	public EntityContainer(String containername) {
+		tables = new HashMap<>();
+		this.containername = containername;
 	}
 	
 	@XmlAttribute(name = "Name")
 	@JsonIgnore
 	public String getName() {
-		return ODataUtils.CONTAINER;
+		return containername;
 	}
 	
 	@XmlElement(name = "EntitySet")
 	@JsonIgnore
-	public EntityContainerReference getEntitySet() {
-		return table;
+	public Collection<EntityContainerReference> getEntitySet() {
+		return tables.values();
 	}
 	
 	@JsonProperty(ODataUtils.KIND)
@@ -39,14 +41,16 @@ public class EntityContainer {
 
 	@JsonAnyGetter
 	public Map<String, EntityContainerReference> getDataJson() {
-		Map<String, EntityContainerReference> data = new HashMap<>();
-		data.put(table.getName(), table);
-		return data;
+		return tables;
+	}
+	
+	public void addTable(EntityType table) {
+		tables.put(table.getName(), new EntityContainerReference(table.getIdentifier()));
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("EntityContainer %s for table %s", ODataUtils.CONTAINER, table);
+		return String.format("EntityContainer %s for table %s", containername, tables.values());
 	}
 
 }

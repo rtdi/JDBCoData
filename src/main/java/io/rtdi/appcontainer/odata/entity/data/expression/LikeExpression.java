@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class LikeExpression extends ExpressionSet implements IBooleanExpression {
 	private String[] pair = new String[2];
 
-	public LikeExpression(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
+	public LikeExpression(Stack<Expression> stack, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 

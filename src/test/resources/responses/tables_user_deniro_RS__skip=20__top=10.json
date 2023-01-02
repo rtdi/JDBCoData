@@ -1,0 +1,57 @@
+{
+	"@odata.context": "$metadata#RS",
+	"value": [
+		{
+			"Year": "1987",
+			"Score": "  80",
+			"Title": " \"The Untouchables\""
+		},
+		{
+			"Year": "1987",
+			"Score": "  78",
+			"Title": " \"Angel Heart\""
+		},
+		{
+			"Year": "1988",
+			"Score": "  96",
+			"Title": " \"Midnight Run\""
+		},
+		{
+			"Year": "1989",
+			"Score": "  64",
+			"Title": " \"Jacknife\""
+		},
+		{
+			"Year": "1989",
+			"Score": "  47",
+			"Title": " \"We're No Angels\""
+		},
+		{
+			"Year": "1990",
+			"Score": "  88",
+			"Title": " \"Awakenings\""
+		},
+		{
+			"Year": "1990",
+			"Score": "  29",
+			"Title": " \"Stanley & Iris\""
+		},
+		{
+			"Year": "1990",
+			"Score": "  96",
+			"Title": " \"Goodfellas\""
+		},
+		{
+			"Year": "1991",
+			"Score": "  76",
+			"Title": " \"Cape Fear\""
+		},
+		{
+			"Year": "1991",
+			"Score": "  69",
+			"Title": " \"Mistress\""
+		}
+	],
+	"@jdbc.sql": "select * from \"user\".\"deniro\" limit 5000",
+	"@odata.nextLink": "/api/odata/tables/user/deniro/RS?$skiptoken=103520820000001"
+}

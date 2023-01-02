@@ -1,0 +1,57 @@
+{
+	"@odata.context": "$metadata#RS",
+	"value": [
+		{
+			"Year": "1977",
+			"Score": "  67",
+			"Title": " \"New York New York\""
+		},
+		{
+			"Year": "1978",
+			"Score": "  93",
+			"Title": " \"The Deer Hunter\""
+		},
+		{
+			"Year": "1980",
+			"Score": "  97",
+			"Title": " \"Raging Bull\""
+		},
+		{
+			"Year": "1981",
+			"Score": "  75",
+			"Title": " \"True Confessions\""
+		},
+		{
+			"Year": "1983",
+			"Score": "  90",
+			"Title": " \"The King of Comedy\""
+		},
+		{
+			"Year": "1984",
+			"Score": "  89",
+			"Title": " \"Once Upon a Time in America\""
+		},
+		{
+			"Year": "1984",
+			"Score": "  60",
+			"Title": " \"Falling in Love\""
+		},
+		{
+			"Year": "1985",
+			"Score": "  98",
+			"Title": " \"Brazil\""
+		},
+		{
+			"Year": "1986",
+			"Score": "  65",
+			"Title": " \"The Mission\""
+		},
+		{
+			"Year": "1987",
+			"Score": " 100",
+			"Title": " \"Dear America: Letters Home From Vietnam\""
+		}
+	],
+	"@jdbc.sql": "select * from \"user\".\"deniro\" limit 5000",
+	"@odata.nextLink": "/api/odata/tables/user/deniro/RS?$skiptoken=103520820000001"
+}

@@ -3,20 +3,18 @@ package io.rtdi.appcontainer.odata;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
-import io.rtdi.appcontainer.odata.entity.metadata.PropertyRef;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
+import io.rtdi.appcontainer.odata.entity.definitions.PropertyRef;
 
 public class ODataKeyClause extends ODataSQLStatementPart {
 
-	public ODataKeyClause(String keys, ODataSchema table) throws ODataException {
+	public ODataKeyClause(String keys, EntityType table) throws ODataException {
 		if (table == null) {
 			throw new ODataException("No table metadata provided to the API call");			
-		} else if (table.getEntityType() == null) {
-			throw new ODataException("The table metadata has no details about the EntityType");
-		} else if (table.getEntityType().getPK() == null || table.getEntityType().getPK().size() == 0) {
+		} else if (table.getPK() == null || table.getPK().size() == 0) {
 			throw new ODataException("The table has no PK defined, hence does not support key access oData API calls");
 		}
-		List<PropertyRef> pk = table.getEntityType().getPK();
+		List<PropertyRef> pk = table.getPK();
 		String[] keyparts = keys.split(",");
 		paramValues = new ArrayList<>();
 		sql = new StringBuilder();
@@ -25,7 +23,7 @@ public class ODataKeyClause extends ODataSQLStatementPart {
 				String odatapk = pk.get(0).getName();
 				sql.append('"').append(ODataUtils.decodeName(odatapk)).append('"')
 					.append(" = ?");
-				paramValues.add(ODataTypes.convertToJDBC(keyparts[0], table.getEntityType().getPropertyMetadata(odatapk)));
+				paramValues.add(ODataTypes.convertToJDBC(keyparts[0], table.getPropertyMetadata(odatapk)));
 			} else {
 				throw new ODataException(String.format("The query got a single key \"%s\" but the table has %d keys",
 						keys, pk.size()));
@@ -47,7 +45,7 @@ public class ODataKeyClause extends ODataSQLStatementPart {
 						}
 						sql.append('"').append(ODataUtils.decodeName(k)).append('"')
 							.append(" = ?");
-						paramValues.add(ODataTypes.convertToJDBC(kv[1].trim(), table.getEntityType().getPropertyMetadata(k)));
+						paramValues.add(ODataTypes.convertToJDBC(kv[1].trim(), table.getPropertyMetadata(k)));
 					} else {
 						throw new ODataException(String.format("The condition column is \"%s\" but such column does not exist as key ",
 								kvstring));							

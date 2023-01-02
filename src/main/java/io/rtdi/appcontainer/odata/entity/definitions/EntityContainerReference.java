@@ -1,4 +1,4 @@
-package io.rtdi.appcontainer.odata.entity.metadata;
+package io.rtdi.appcontainer.odata.entity.definitions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ public class EntityContainerReference {
 	private String entitytype;
 	private String name;
 
-	public EntityContainerReference(ODataIdentifier identifer, String tabletype) {
+	public EntityContainerReference(ODataIdentifier identifer) {
 		this.entitytype = identifer.getNamespace() + "." + identifer.getEntityType();
 		this.name = identifer.getEntitySetName();
 	}

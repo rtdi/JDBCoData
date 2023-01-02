@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public abstract class ExpressionSet extends Expression {
 
-	public ExpressionSet(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
+	public ExpressionSet(Stack<Expression> stack, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 	}
 
@@ -31,7 +31,7 @@ public abstract class ExpressionSet extends Expression {
 		}
 	}
 	
-	protected static Expression getNextExpression(CharBuffer in, Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) throws ODataException {
+	protected static Expression getNextExpression(CharBuffer in, Stack<Expression> stack, EntityType table, List<IParameterValue> params) throws ODataException {
 		StringBuilder lastword = new StringBuilder();
 		while (in.hasRemaining()) {
 			char c = in.get();
@@ -72,7 +72,7 @@ public abstract class ExpressionSet extends Expression {
 		return null;
 	}
 	
-	private static Expression getFunction(String functionname, Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) throws ODataException {
+	private static Expression getFunction(String functionname, Stack<Expression> stack, EntityType table, List<IParameterValue> params) throws ODataException {
 		switch (functionname) {
 		case "contains":
 			return new LikeExpression(stack, table, params);
@@ -80,7 +80,7 @@ public abstract class ExpressionSet extends Expression {
 		throw new ODataException(String.format("The term %s is not a supported function", functionname));
 	}
 
-	private static Expression parseWord(CharSequence word, CharBuffer in, Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) throws ODataException {
+	private static Expression parseWord(CharSequence word, CharBuffer in, Stack<Expression> stack, EntityType table, List<IParameterValue> params) throws ODataException {
 		switch (word.toString()) {
 		case "null":
 			return new NullConstant(stack, table, params);

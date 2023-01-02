@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class NumberConstant extends Expression implements IParameterValue {
 
 	private StringBuilder text;
 
-	public NumberConstant(Stack<Expression> stack, char c, ODataSchema table, List<IParameterValue> params) {
+	public NumberConstant(Stack<Expression> stack, char c, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 		text = new StringBuilder(c);
 	}
