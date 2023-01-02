@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 /**
  * Reading data from a JDBC ResultSet can be paused and continued in the next OData call.
@@ -26,7 +26,7 @@ import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 public class AsyncResultSetQuery extends AsyncResultSet {
 
 	private String[] columnnames;
-	private ODataSchema table;
+	private EntityType table;
 	private Thread runner;
 	private ReaderThread reader;
 
@@ -58,14 +58,13 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 		ODataSelectClause projection = new ODataSelectClause(select, table);
 		ODataOrderByClause orderby = new ODataOrderByClause(order, table);
 		// read all data ignoring skip/top
-		String sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), orderby.getSQL(), null, resultsetrowlimit, table);
+		sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), orderby.getSQL(), null, resultsetrowlimit, table);
 		reader = new ReaderThread(sql);
 		reader.addParams(where.getParamValues());
 		runner = new Thread(reader, "AsyncSQLReader_" + this.hashCode());
 		runner.start();
 	}
 
-	
 	/**
 	 * @return the exception the reader thread faced or null
 	 */

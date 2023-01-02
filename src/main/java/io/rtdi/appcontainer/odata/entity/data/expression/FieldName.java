@@ -6,14 +6,14 @@ import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
 import io.rtdi.appcontainer.odata.ODataUtils;
-import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityTypeProperty;
 
 public class FieldName extends Expression {
 
 	private String name;
 
-	public FieldName(Stack<Expression> stack, String name, ODataSchema table, List<IParameterValue> params) {
+	public FieldName(Stack<Expression> stack, String name, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 		this.name = name;
 	}
@@ -33,7 +33,7 @@ public class FieldName extends Expression {
 	}
 
 	public EntityTypeProperty getDataType() {
-		return table.getEntityType().getPropertyMetadata(name);
+		return table.getPropertyMetadata(name);
 	}
 
 }

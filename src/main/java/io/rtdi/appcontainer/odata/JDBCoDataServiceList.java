@@ -8,10 +8,8 @@ import java.sql.SQLException;
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
 import io.rtdi.appcontainer.odata.entity.data.ODataResultSet;
-import io.rtdi.appcontainer.odata.entity.metadata.EntityContainer;
-import io.rtdi.appcontainer.odata.entity.metadata.EntityType;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 import io.rtdi.appcontainer.odata.entity.metadata.Metadata;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,7 +35,7 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 
 	private ODataIdentifier identifier = new ODataIdentifier("PUBLIC", "___TABLELIST");
 	
-	private static ODataSchema schema;
+	private static EntityType schema;
 
 	@Operation(
 			summary = "OData service to get all OData services",
@@ -118,13 +116,13 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 			if (skiptoken != null) {
 				// Case 1: The client asked for the next page using the skiptoken, the server must provide that
 				try {
-					ODataResultSet ret = resultset.fetchRecords(skip, top, AsyncResultSet.tokenToPageId(skiptoken));
+					ODataResultSet ret = resultset.fetchRecords(skip, top, AsyncResultSet.tokenToPageId(skiptoken), format);
 					return createResponse(200, ret, format, request);
 				} catch (NumberFormatException e) {
 					throw new ODataException("Invalid $skiptoken");
 				}
 			} else {
-				ODataResultSet ret = resultset.fetchRecords(skip, top, null);
+				ODataResultSet ret = resultset.fetchRecords(skip, top, null, format);
 				return createResponse(200, ret, format, request);
 			}
 		} catch (Exception e) {
@@ -134,21 +132,17 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
 	}
 
 	@Override
-	protected ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier)
+	protected EntityType readTableMetadata(Connection conn, ODataIdentifier identifier)
 			throws SQLException, ODataException {
 		if (schema == null) {
-			schema = new ODataSchema(identifier, getURL());
-			EntityContainer container = new EntityContainer(identifier, "METADATA");
-			EntityType entitytype = new EntityType(identifier);
-			entitytype.addKey("SCHEMANAME");
-			entitytype.addKey("OBJECTNAME");
-			entitytype.addColumn("SCHEMANAME", JDBCType.VARCHAR, null, 256, null);
-			entitytype.addColumn("OBJECTNAME", JDBCType.VARCHAR, null, 256, null);
-			entitytype.addColumn("COMMENT", JDBCType.VARCHAR, null, null, null);
-			entitytype.addColumn("OBJECTTYPE", JDBCType.VARCHAR, null, 30, null);
-			entitytype.addColumn("URL", JDBCType.VARCHAR, null, 1024, null);
-			schema.setContainer(container);
-			schema.setEntityType(entitytype);
+			schema = new EntityType(identifier);
+			schema.addKey("SCHEMANAME");
+			schema.addKey("OBJECTNAME");
+			schema.addColumn("SCHEMANAME", JDBCType.VARCHAR, null, 256, null);
+			schema.addColumn("OBJECTNAME", JDBCType.VARCHAR, null, 256, null);
+			schema.addColumn("COMMENT", JDBCType.VARCHAR, null, null, null);
+			schema.addColumn("OBJECTTYPE", JDBCType.VARCHAR, null, 30, null);
+			schema.addColumn("URL", JDBCType.VARCHAR, null, 1024, null);
 		}
 		return schema;
 	}
@@ -186,7 +180,7 @@ public abstract class JDBCoDataServiceList extends JDBCoDataBase {
     		) {
 		try {
 				Metadata ret = new Metadata();
-				ODataSchema table = readTableMetadata(null, identifier);
+				EntityType table = readTableMetadata(null, identifier);
 				ret.addObject(table);
 				return createResponse(200, ret, format, request);
 		} catch (Exception e) {

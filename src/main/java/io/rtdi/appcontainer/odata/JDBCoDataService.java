@@ -9,9 +9,9 @@ import java.util.Enumeration;
 import io.rtdi.appcontainer.odata.entity.ODataError;
 import io.rtdi.appcontainer.odata.entity.data.ODataRecord;
 import io.rtdi.appcontainer.odata.entity.data.ODataResultSet;
-import io.rtdi.appcontainer.odata.entity.metadata.EntitySets;
+import io.rtdi.appcontainer.odata.entity.definitions.EntitySets;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 import io.rtdi.appcontainer.odata.entity.metadata.Metadata;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -127,7 +127,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				String name = ODataUtils.decodeName(nameraw);
 				ODataIdentifier identifier = createODataIdentifier(schema, name, ODataIdentifier.ENTITYNAME);
 				Metadata ret = new Metadata();
-				ODataSchema table = getMetadata(conn, identifier);
+				EntityType table = getMetadata(conn, identifier);
 				ret.addObject(table);
 				return createResponse(200, ret, format, request);
 			}
@@ -241,14 +241,15 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			}
 		}
 		int resultsetlimit = 5000;
-		if (request.getHeader("resultsetlimit") != null) {
-			try {
-				resultsetlimit = Integer.valueOf(request.getHeader("resultsetlimit"));
-				if (resultsetlimit < 1000) {
-					resultsetlimit = 1000;
+		if (skip == null && top != null) {
+			resultsetlimit = top;
+		} else {
+			if (request.getHeader("resultsetlimit") != null) {
+				try {
+					resultsetlimit = Integer.valueOf(request.getHeader("resultsetlimit"));
+				} catch (NumberFormatException e) {
+					resultsetlimit = 5000;
 				}
-			} catch (NumberFormatException e) {
-				resultsetlimit = 5000;
 			}
 		}
 		int hardlimit = this.getSQLResultSetLimit(identifier.getDBSchema(), identifier.getDBObjectName(), request);
@@ -264,7 +265,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				if (query == null) {
 					throw new ODataException("The nextLink/skiptoken is no longer valid");
 				} else {
-					ODataResultSet ret = query.fetchRecords(skip, top, AsyncResultSet.tokenToPageId(skiptoken));
+					ODataResultSet ret = query.fetchRecords(skip, top, AsyncResultSet.tokenToPageId(skiptoken), format);
 					return createResponse(200, ret, format, request);
 				}
 			} catch (NumberFormatException e) {
@@ -276,7 +277,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 				resultsetid = request.getHeader("ContextId");
 			}
 			if (resultsetid == null) {
-				String signature = schemaraw + nameraw + select + filter + order; 
+				String signature = schemaraw + nameraw + select + filter + order + resultsetlimit; 
 				resultsetid = String.valueOf(signature.hashCode());
 			}
 			if (skip == null || skip == 0) {
@@ -292,7 +293,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 					addToResultSetCache(resultsetid, query);
 				}
 			}
-			ODataResultSet ret = query.fetchRecords(skip, top, null);
+			ODataResultSet ret = query.fetchRecords(skip, top, null, format);
 			return createResponse(200, ret, format, request);
 		}
 	}
@@ -377,7 +378,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 
 	protected Response getODataEntityRowImpl(String keys, String select, String format, Connection conn,
 			ODataIdentifier identifier) throws SQLException, ODataException {
-		ODataSchema table = getMetadata(conn, identifier);
+		EntityType table = getMetadata(conn, identifier);
 		ODataKeyClause where = new ODataKeyClause(keys, table);
 		ODataSelectClause projection = new ODataSelectClause(select, table);
 		String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, 1, table);
@@ -460,39 +461,18 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 
 	protected Response getODataEntitySetCountImpl(String filter, String format, Connection conn,
 			ODataIdentifier identifier) throws SQLException, ODataException {
-		ODataSchema table = getMetadata(conn, identifier);
+		EntityType table = getMetadata(conn, identifier);
 		ODataFilterClause where = new ODataFilterClause(filter, table);
 		String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, 1, table);
 		try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 			try (ResultSet rs = stmt.executeQuery(); ) {
 				if (rs.next()) {
-					return createResponse(200, rs.getInt(1), format, request);
+					return createResponseText(200, rs.getInt(1), request);
 				} else {
 					return createResponse(200, Integer.valueOf(0), format, request);
 				}
 			}
 		}
-	}
-
-	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
-		if (top == null) {
-			top = 5000;
-		}
-		StringBuilder sql = new StringBuilder("select ");
-		sql.append(projection);
-		sql.append(" from ").append(identifer.getIdentifier());
-		if (where != null && where.length() != 0) {
-			sql.append(" where ");
-			sql.append(where);
-		}
-		if (orderby != null) {
-			sql.append(" order by ").append(orderby);
-		}
-		sql.append(" limit ").append(top);
-		if (skip != null) {
-			sql.append(" offset ").append(skip);
-		}
-		return sql.toString();
 	}
 
 }

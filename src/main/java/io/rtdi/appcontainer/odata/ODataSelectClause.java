@@ -1,10 +1,10 @@
 package io.rtdi.appcontainer.odata;
 
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class ODataSelectClause extends ODataSQLStatementPart {
 
-	public ODataSelectClause(String select, ODataSchema table) {
+	public ODataSelectClause(String select, EntityType table) {
 		if (select == null || select.trim().length() == 0) {
 			this.sql = new StringBuilder("*");
 		} else {

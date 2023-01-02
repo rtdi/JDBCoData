@@ -6,15 +6,15 @@ import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
 import io.rtdi.appcontainer.odata.ODataTypes;
-import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityTypeProperty;
 
 public class StringConstant extends Expression implements IParameterValue {
 
 	private StringBuilder text;
 	private EntityTypeProperty datatype;
 
-	public StringConstant(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
+	public StringConstant(Stack<Expression> stack, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 		text = new StringBuilder();
 	}

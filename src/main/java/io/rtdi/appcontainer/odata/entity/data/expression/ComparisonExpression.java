@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class ComparisonExpression extends Expression implements IBooleanExpression {
 
@@ -13,7 +13,7 @@ public class ComparisonExpression extends Expression implements IBooleanExpressi
 	private Expression left;
 	private Expression right;
 
-	public ComparisonExpression(Stack<Expression> stack, String operation, ODataSchema table, List<IParameterValue> params) {
+	public ComparisonExpression(Stack<Expression> stack, String operation, EntityType table, List<IParameterValue> params) {
 		super(stack, table, params);
 		this.operation = operation;
 		left = stack.pop();

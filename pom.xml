@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.rtdi.appcontainer</groupId>
 	<artifactId>JDBCoData</artifactId>
-	<version>0.1.7</version>
+	<version>0.1.8</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>An oData service for databases</description>
 	<packaging>jar</packaging>
@@ -236,6 +236,12 @@
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-jaxrs2-servlet-initializer-jakarta</artifactId>
 			<version>${swagger}</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>net.sourceforge.csvjdbc</groupId>
+		    <artifactId>csvjdbc</artifactId>
+		    <version>1.0.40</version>
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>

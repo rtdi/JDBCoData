@@ -1,0 +1,31 @@
+{
+	"@odata.context": "$metadata#RS",
+	"value": [
+		{
+			"Year": "1987",
+			"Score": " 100",
+			"Title": " \"Dear America: Letters Home From Vietnam\""
+		},
+		{
+			"Year": "1976",
+			"Score": "  99",
+			"Title": " \"Taxi Driver\""
+		},
+		{
+			"Year": "1973",
+			"Score": "  98",
+			"Title": " \"Mean Streets\""
+		},
+		{
+			"Year": "1985",
+			"Score": "  98",
+			"Title": " \"Brazil\""
+		},
+		{
+			"Year": "1974",
+			"Score": "  97",
+			"Title": " \"The Godfather Part II\""
+		}
+	],
+	"@jdbc.sql": "select * from \"user\".\"deniro\" order by \"Score\" desc limit 5"
+}

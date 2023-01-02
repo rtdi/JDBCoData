@@ -8,7 +8,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityTypeProperty;
 import jakarta.xml.bind.DatatypeConverter;
 
 public enum ODataTypes {

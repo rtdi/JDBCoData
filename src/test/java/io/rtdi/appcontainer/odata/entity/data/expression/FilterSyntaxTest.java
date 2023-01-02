@@ -11,20 +11,16 @@ import org.junit.jupiter.api.Test;
 
 import io.rtdi.appcontainer.odata.ODataIdentifier;
 import io.rtdi.appcontainer.odata.ODataTypes;
-import io.rtdi.appcontainer.odata.entity.metadata.EntityType;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 class FilterSyntaxTest {
 
-	private static ODataSchema schema;
+	private static EntityType entitytype;
 	
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
-		schema = new ODataSchema();
-		
-		EntityType entitytype = new EntityType();
+		entitytype = new EntityType();
 		entitytype.addColumn("FirstName", JDBCType.NVARCHAR, "NVARCHAR", 100, null);
-		schema.setEntityType(entitytype );
 	}
 
 	@AfterAll
@@ -35,7 +31,7 @@ class FilterSyntaxTest {
 	void test() {
 		try {
 			CharBuffer in = CharBuffer.wrap("FirstName eq 'Scott' or (FirstName eq 'Fitz')");
-			Filter f = new Filter(schema);
+			Filter f = new Filter(entitytype);
 			f.parse(in);
 			System.out.println(f.getExpression());
 			System.out.println(f.getSQL());
@@ -49,7 +45,7 @@ class FilterSyntaxTest {
 	void testContains() {
 		try {
 			CharBuffer in = CharBuffer.wrap("contains(FirstName,'Alf')");
-			Filter f = new Filter(schema);
+			Filter f = new Filter(entitytype);
 			f.parse(in);
 			System.out.println(f.getExpression());
 			System.out.println(f.getSQL());
@@ -63,8 +59,8 @@ class FilterSyntaxTest {
 	void test1() {
 		try {
 			CharBuffer in = CharBuffer.wrap("FirstName eq 'Scott' or FirstName eq 'Fitz'");
-			ODataSchema table1 = new ODataSchema(new ODataIdentifier("schema", "table1"), "TABLE");
-			table1.getEntityType().addColumn("FirstName", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
+			EntityType table1 = new EntityType(new ODataIdentifier("schema", "table1"), "TABLE");
+			table1.addColumn("FirstName", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
 			Filter f = new Filter(table1);
 			f.parse(in);
 			System.out.println(f.getExpression());
@@ -79,9 +75,9 @@ class FilterSyntaxTest {
 	void test2() {
 		try {
 			CharBuffer in = CharBuffer.wrap("ACCOUNTID eq '0011j00001KwLiuAAF' and (ID ne '8011j000007S0mZAAS' and ID ne '8011j000007S0llAAC' and ID ne '8011j000007S0mAAAS' and ID ne '8011j000007S0nNAAS' and ID ne '8011j000007S0myAAC' and ID ne '8011j000007S0nmAAC' and ID ne '8011j000007S0oBAAS' and ID ne '8011j000007S0oaAAC')");
-			ODataSchema table2 = new ODataSchema(new ODataIdentifier("schema", "table1"), "TABLE");
-			table2.getEntityType().addColumn("ACCOUNTID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
-			table2.getEntityType().addColumn("ID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
+			EntityType table2 = new EntityType(new ODataIdentifier("schema", "table1"), "TABLE");
+			table2.addColumn("ACCOUNTID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
+			table2.addColumn("ID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
 			Filter f = new Filter(table2);
 			f.parse(in);
 			System.out.println(f.getExpression());
@@ -96,9 +92,9 @@ class FilterSyntaxTest {
 	void test3() {
 		try {
 			CharBuffer in = CharBuffer.wrap("ACCOUNTID eq '0011j00001KwLiuAAF' and ID ne '8011j000007S0mZAAS'");
-			ODataSchema table2 = new ODataSchema(new ODataIdentifier("schema", "table1"), "TABLE");
-			table2.getEntityType().addColumn("ACCOUNTID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
-			table2.getEntityType().addColumn("ID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
+			EntityType table2 = new EntityType(new ODataIdentifier("schema", "table1"), "TABLE");
+			table2.addColumn("ACCOUNTID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
+			table2.addColumn("ID", JDBCType.VARCHAR, ODataTypes.STRING.name(), 255, 0);
 			Filter f = new Filter(table2);
 			f.parse(in);
 			System.out.println(f.getExpression());

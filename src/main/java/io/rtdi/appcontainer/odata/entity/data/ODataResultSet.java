@@ -73,6 +73,11 @@ public class ODataResultSet extends LinkedHashMap<String, Object> {
 		this.put(ODataUtils.VALUE, value);
 	}
 	
+	public ODataResultSet(String sql) {
+		this();
+		this.put(ODataUtils.SQL, sql);
+	}
+
 	public void addRow(ODataRecord row) {
 		value.add(row);
 	}

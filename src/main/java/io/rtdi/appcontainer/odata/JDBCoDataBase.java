@@ -9,8 +9,8 @@ import java.time.Duration;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-import io.rtdi.appcontainer.odata.entity.metadata.EntityTypeProperty;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityTypeProperty;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +51,20 @@ public abstract class JDBCoDataBase {
 		return r.build();
 	}
 
+	/**
+	 * Used for the $count where only the number as such is returned
+	 * 
+	 * @param httpstatus
+	 * @param entity
+	 * @param request
+	 * @return
+	 */
+	protected static Response createResponseText(int httpstatus, Object entity, HttpServletRequest request) {
+		ResponseBuilder r = Response.status(httpstatus).entity(entity).header("OData-Version", ODataUtils.VERSIONVALUE);
+		r = r.header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+		return r.build();
+	}
+
 	public static AsyncResultSet getCachedResultSet(HttpServletRequest request, String resultsetid) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
@@ -66,12 +80,12 @@ public abstract class JDBCoDataBase {
 		}
 	}
 
-	protected ODataSchema getMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
+	protected EntityType getMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
 		HttpSession session = request.getSession(false);
-		ODataSchema table;
+		EntityType table;
 		if (session != null) {
 			@SuppressWarnings("unchecked")
-			Cache<ODataIdentifier, ODataSchema> cache = (Cache<ODataIdentifier, ODataSchema>) session.getAttribute("TABLEMETADATACACHE");
+			Cache<ODataIdentifier, EntityType> cache = (Cache<ODataIdentifier, EntityType>) session.getAttribute("TABLEMETADATACACHE");
 			if (cache == null) {
 				cache = Caffeine.newBuilder()
 						.expireAfterWrite(Duration.ofMinutes(getTableMetadataCacheTimeout()))
@@ -89,8 +103,8 @@ public abstract class JDBCoDataBase {
 		return table;
 	}
 
-	protected ODataSchema readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
-		ODataSchema table = null;
+	protected EntityType readTableMetadata(Connection conn, ODataIdentifier identifier) throws SQLException, ODataException {
+		EntityType table = null;
 		try (ResultSet rs = conn.getMetaData().getTables(conn.getCatalog(), identifier.getDBSchema(), identifier.getDBObjectName(), null); ) {
 			if (rs.next()) {
 				/*
@@ -113,7 +127,7 @@ public abstract class JDBCoDataBase {
 				case "ALIAS":
 				case "SYNONYM":
 				case "SYSTEM TABLE":
-					table = new ODataSchema(identifier, tabletype);
+					table = new EntityType(identifier, tabletype);
 					table.setComment(comment);
 					table.addAnnotation(ODataUtils.JDBCSCHEMANAME, identifier.getDBSchema());
 					table.addAnnotation(ODataUtils.JDBCOBJECTNAME, identifier.getDBObjectName());
@@ -167,7 +181,7 @@ public abstract class JDBCoDataBase {
 						- NO --- if this not a generated column 
 						- empty string --- if it cannot be determined whether this is a generated column 
 				 */
-				EntityTypeProperty col = table.getEntityType().addColumn(ODataUtils.encodeName(rs.getString(4)), JDBCType.valueOf(rs.getInt(5)), rs.getString(6), rs.getInt(7), rs.getInt(9));
+				EntityTypeProperty col = table.addColumn(ODataUtils.encodeName(rs.getString(4)), JDBCType.valueOf(rs.getInt(5)), rs.getString(6), rs.getInt(7), rs.getInt(9));
 				String nullable = rs.getString(18);
 				if ("NO".equals(nullable)) {
 					col.setNullable(Boolean.FALSE);
@@ -187,7 +201,7 @@ public abstract class JDBCoDataBase {
 				6.PK_NAME String => primary key name (may be null) 
 			 */
 			while (rs.next()) {
-				table.getEntityType().addKey(ODataUtils.encodeName(rs.getString(4)));
+				table.addKey(ODataUtils.encodeName(rs.getString(4)));
 			}
 		}
 		return table;
@@ -208,7 +222,7 @@ public abstract class JDBCoDataBase {
 	}
 
 	public boolean addToResultSetCache(String resultsetid, AsyncResultSet resultset) {
-		HttpSession session = request.getSession(false);
+		HttpSession session = request.getSession(true);
 		if (session != null) {
 			@SuppressWarnings("unchecked")
 			Cache<String, AsyncResultSet> cache = (Cache<String, AsyncResultSet>) session.getAttribute("RESULTSETCACHE");
@@ -256,7 +270,7 @@ public abstract class JDBCoDataBase {
 		return request.getRequestURI();
 	}
 
-	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, ODataSchema table) {
+	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, EntityType table) {
 		if (top == null) {
 			top = 5000;
 		}

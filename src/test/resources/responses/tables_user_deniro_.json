@@ -1,0 +1,10 @@
+{
+	"@odata.context": "$metadata",
+	"value": [
+		{
+			"name": "TABLE",
+			"$kind": "EntitySet",
+			"url": "TABLE"
+		}
+	]
+}

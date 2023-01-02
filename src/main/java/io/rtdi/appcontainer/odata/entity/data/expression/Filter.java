@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public class Filter extends ExpressionSet implements IBooleanExpression {
 	private Expression expression;
@@ -14,7 +14,7 @@ public class Filter extends ExpressionSet implements IBooleanExpression {
 	 * http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#_Toc31360957
 	 */
 	
-	public Filter(ODataSchema table) throws ODataException {
+	public Filter(EntityType table) throws ODataException {
 		super(new Stack<>(), table, new ArrayList<>());
 	}
 

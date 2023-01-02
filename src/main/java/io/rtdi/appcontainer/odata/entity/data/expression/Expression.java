@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Stack;
 
 import io.rtdi.appcontainer.odata.ODataException;
-import io.rtdi.appcontainer.odata.entity.metadata.ODataSchema;
+import io.rtdi.appcontainer.odata.entity.definitions.EntityType;
 
 public abstract class Expression implements IExpression {
 	protected Stack<Expression> stack;
-	protected ODataSchema table;
+	protected EntityType table;
 	private List<IParameterValue> params;
 
-	public Expression(Stack<Expression> stack, ODataSchema table, List<IParameterValue> params) {
+	public Expression(Stack<Expression> stack, EntityType table, List<IParameterValue> params) {
 		this.stack = stack;
 		this.table = table;
 		this.params = params;

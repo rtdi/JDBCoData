@@ -1,0 +1,15 @@
+{
+	"@odata.context": "$metadata",
+	"value": [
+		{
+			"name": "deniro",
+			"$kind": "EntitySet",
+			"url": "deniro"
+		},
+		{
+			"name": "user.deniro",
+			"$kind": "EntitySet",
+			"url": "user.deniro"
+		}
+	]
+}
