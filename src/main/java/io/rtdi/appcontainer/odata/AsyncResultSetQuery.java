@@ -1,6 +1,7 @@
 package io.rtdi.appcontainer.odata;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -115,7 +116,7 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 							}
 							ODataRecord row = new ODataRecord();
 							for (int i=0; i<columnnames.length; i++) {
-								row.put(columnnames[i], ODataTypes.convert(rs.getObject(i+1)));
+								row.put(columnnames[i], ODataTypes.convert(rs.getObject(i+1), JDBCType.valueOf(rs.getMetaData().getColumnType(i+1)), rs.getMetaData().getColumnTypeName(i+1)));
 							}
 							rows.add(row);
 						}

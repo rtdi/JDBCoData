@@ -1,0 +1,1 @@
+{"@odata.context":"$metadata#RS","value":[{"Year":"2015","Score":"  60","Title":" \"Joy\""},{"Year":"2015","Score":"  26","Title":" \"Heist\""},{"Year":"2015","Score":"  61","Title":" \"The Intern\""},{"Year":"2016","Score":"  11","Title":" \"Dirty Grandpa\""}],"@jdbc.sql":"select * from \"user\".\"deniro\" where \"Year\"  > ?   limit 5000"}

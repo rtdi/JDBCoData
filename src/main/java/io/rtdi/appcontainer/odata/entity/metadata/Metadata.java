@@ -113,7 +113,6 @@ public class Metadata {
 	public Metadata() {
 		this.version = "4.0";
 		this.schemas = new HashMap<>();
-		schemas.put(ODataUtils.SCHEMA, new ODataSchema(ODataUtils.SCHEMA));
 	}
 	
 	@XmlAttribute(name="Version")
@@ -124,7 +123,11 @@ public class Metadata {
 	
 	public void addObject(EntityType tableobject) {
 		if (tableobject != null) {
-			ODataSchema schema = schemas.get(ODataUtils.SCHEMA);
+			ODataSchema schema = schemas.get(tableobject.getIdentifier().getNamespace());
+			if (schema == null) {
+				schema = new ODataSchema(tableobject.getIdentifier().getNamespace());
+				schemas.put(ODataUtils.SCHEMA, schema);
+			}
 			schema.addEntityType(tableobject);
 		}
 	}
