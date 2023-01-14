@@ -2,6 +2,7 @@ package io.rtdi.appcontainer.odata;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.JDBCType;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalTime;
@@ -162,15 +163,36 @@ public enum ODataTypes {
 	 * Convert the value retrieved via rs.getObject() into the correct OData object value
 	 * 
 	 * @param jdbcobject The value returned by rs.getObject()
+	 * @param jdbcType The detailed JDBC type, e.g. the object might be a string but the requested type a geometry
+	 * @param typename For e.g. geometry, the type itself is not enough
 	 * @return A string OData expects as payload for this data type
 	 */
-	public static Object convert(Object jdbcobject) {
+	public static Object convert(Object jdbcobject, JDBCType jdbcType, String typename) {
+		/*
+		 * see http://docs.oasis-open.org/odata/odata-json-format/v4.0/errata03/os/odata-json-format-v4.0-errata03-os-complete.html#_Toc453766642
+		 * see http://docs.oasis-open.org/odata/odata-atom-format/v4.0/cs02/odata-atom-format-v4.0-cs02.html#_Toc372792712
+		 */
 		if (jdbcobject == null) {
 			return null;
 		} else {
-			if (jdbcobject instanceof Number) {
-				return jdbcobject.toString(); // Convert to a string as the value might be NaN or infinity
+			/* 
+			 * Numbers are numbers except for NAN and INF
+			 */
+			if (jdbcobject instanceof Float) {
+				Float value = (Float) jdbcobject;
+				if (value.isInfinite() || value.isNaN()) {
+					return value.toString();
+				} else {
+					return value;
+				}
+			} else if (jdbcobject instanceof Number) {
+				return jdbcobject; // Convert to a string as the value might be NaN or infinity
 			} else if (jdbcobject instanceof CharSequence) {
+				/*
+				 * OBJECT, ARRAY, VARIANT are also handled here also as there is no equivalent in OData
+				 * Geography and Geometry are selected as GeoJson and therefore fine as well.
+				 * Only if the output format is XML, then the geojson must be converted to GML - see issue https://github.com/rtdi/JDBCoData/issues/15
+				 */
 				return jdbcobject.toString();
 			} else if (jdbcobject instanceof byte[]) {
 				return DatatypeConverter.printHexBinary((byte[]) jdbcobject);

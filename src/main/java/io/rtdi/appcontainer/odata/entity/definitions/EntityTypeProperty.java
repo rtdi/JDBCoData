@@ -38,6 +38,9 @@ public class EntityTypeProperty extends ODataBase {
 			 */
 			odatatype = ODataTypes.Geography;
 			maxlength = length;
+		} else if (typename != null && typename.equals("GEOMETRY")) {
+			odatatype = ODataTypes.Geometry;
+			maxlength = length;
 		} else {
 			switch (type) {
 			case BIGINT:
@@ -61,7 +64,7 @@ public class EntityTypeProperty extends ODataBase {
 			case NCLOB:
 			case SQLXML:
 				odatatype = ODataTypes.STRING;
-				maxlength = getMaxLength(null); // And unbound string, except for salesforce
+				maxlength = getMaxLength(null); // An unbound string, except for salesforce
 			case DATE:
 				odatatype = ODataTypes.DATE;
 				break;
@@ -103,6 +106,7 @@ public class EntityTypeProperty extends ODataBase {
 				 * VARCHAR
 				 * NVARCHAR
 				 * CHAR
+				 * ARRAY primitive has no equivalent in Odata, maybe a complex data type later?
 				 */
 				odatatype = ODataTypes.STRING;
 				maxlength = getMaxLength(length);
