@@ -59,7 +59,7 @@ public class AsyncResultSetQuery extends AsyncResultSet {
 		ODataSelectClause projection = new ODataSelectClause(select, table);
 		ODataOrderByClause orderby = new ODataOrderByClause(order, table);
 		// read all data ignoring skip/top
-		sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), orderby.getSQL(), null, resultsetrowlimit, table);
+		sql = JDBCoDataService.createSQL(identifier, projection.getSQL(), where.getSQL(), orderby.getSQL(), null, resultsetrowlimit, table, connection);
 		reader = new ReaderThread(sql);
 		reader.addParams(where.getParamValues());
 		runner = new Thread(reader, "AsyncSQLReader_" + this.hashCode());

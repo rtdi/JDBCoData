@@ -382,7 +382,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 		EntityType table = getMetadata(conn, identifier);
 		ODataKeyClause where = new ODataKeyClause(keys, table);
 		ODataSelectClause projection = new ODataSelectClause(select, table);
-		String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, 1, table);
+		String sql = createSQL(identifier, projection.getSQL(), where.getSQL(), null, null, 1, table, conn);
 		try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 			where.setPreparedStatementParameters(stmt);
 			try (ResultSet rs = stmt.executeQuery(); ) {
@@ -464,7 +464,7 @@ public abstract class JDBCoDataService extends JDBCoDataBase {
 			ODataIdentifier identifier) throws SQLException, ODataException {
 		EntityType table = getMetadata(conn, identifier);
 		ODataFilterClause where = new ODataFilterClause(filter, table);
-		String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, 1, table);
+		String sql = createSQL(identifier, "count(*)", where.getSQL(), null, null, 1, table, conn);
 		try (PreparedStatement stmt = conn.prepareStatement(sql);) {
 			try (ResultSet rs = stmt.executeQuery(); ) {
 				if (rs.next()) {
