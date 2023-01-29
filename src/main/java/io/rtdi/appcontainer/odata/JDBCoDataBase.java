@@ -270,7 +270,9 @@ public abstract class JDBCoDataBase {
 		return request.getRequestURI();
 	}
 
-	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, EntityType table) {
+	public static String createSQL(ODataIdentifier identifer, CharSequence projection, CharSequence where, CharSequence orderby, Integer skip, Integer top, EntityType table, Connection conn) throws SQLException {
+		String driver = conn.getMetaData().getURL();
+		boolean issqlserver = driver.startsWith("jdbc:sqlserver");
 		if (top == null) {
 			top = 5000;
 		}
@@ -284,9 +286,24 @@ public abstract class JDBCoDataBase {
 		if (orderby != null) {
 			sql.append(" order by ").append(orderby);
 		}
-		sql.append(" limit ").append(top);
-		if (skip != null) {
-			sql.append(" offset ").append(skip);
+		if (issqlserver) {
+			/*
+			 * ORDER BY ...
+			 * OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;
+			 */
+			if (orderby == null) {
+				sql.append(" order by 1 "); // offset/next requires an order by
+			}
+			if (skip == null) {
+				skip = 0;
+			}
+			sql.append(" offset ").append(skip).append(" rows ");
+			sql.append(" fetch next ").append(top).append(" rows only");
+		} else {
+			sql.append(" limit ").append(top);
+			if (skip != null) {
+				sql.append(" offset ").append(skip);
+			}
 		}
 		return sql.toString();
 	}
